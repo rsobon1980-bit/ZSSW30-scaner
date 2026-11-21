@@ -36,3 +36,7 @@ Otwórz adres strony w Chrome (Android) lub Safari (iPhone), a następnie wybier
 
 ## Wersja v6
 Nagłówek zawiera zdjęcia KTO Rosomak i BWP Borsuk oraz logo przesłane przez użytkownika.
+
+
+## Zmiany v8
+Na poziomie 2 i głębszych podkategoriach komentarz do konkretnego numeru seryjnego jest wyświetlany w tej samej ramce pod numerem. Ikona przy numerze otwiera edycję. Komentarze są zapisywane w IndexedDB, kopii JSON i osobnej kolumnie eksportu Excel. Liczniki numerów pozostają bez zmian.
