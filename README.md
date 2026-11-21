@@ -33,3 +33,6 @@ Otwórz adres strony w Chrome (Android) lub Safari (iPhone), a następnie wybier
 - Google Drive służy do ręcznego przechowywania pobranego pliku kopii; aplikacja nie synchronizuje się automatycznie z Drive.
 - Do skanowania tekstu aparat musi być udostępniony przeglądarce. Po rozpoznaniu należy sprawdzić numer i zatwierdzić go.
 - Ilustracja pojazdów ma charakter poglądowy i nie jest fotografią techniczną.
+
+## Wersja v6
+Nagłówek zawiera zdjęcia KTO Rosomak i BWP Borsuk oraz logo przesłane przez użytkownika.
