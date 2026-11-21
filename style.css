@@ -51,3 +51,53 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 .child-add{margin:12px 0 4px}
 .child-add button{width:100%;text-align:center}
 @media(max-width:420px){.nested-category{margin-left:calc(var(--depth,0) * 5px)}.vehicle-details{padding-left:10px;padding-right:10px}}
+
+/* Marka i ilustracja pojazdów */
+.top{display:block;padding:18px 18px 14px}
+.top-brand{display:flex;align-items:center;gap:11px;min-width:0}
+.top-brand>div:nth-child(2){min-width:0}
+.logo{font-size:16px;font-weight:900;letter-spacing:-1px;background:#1d526b;border:1px solid #54788c}
+.top h1{font-size:22px;letter-spacing:.1px}
+.hero-vehicles{display:block;width:100%;height:clamp(105px,25vw,165px);object-fit:cover;object-position:center 57%;border-radius:13px;margin-top:15px;background:#e6ebed}
+.hero-caption{margin:6px 2px 0!important;color:#d8e5ec!important;font-size:11px!important;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.hero-caption span{opacity:.72;font-size:10px}
+
+/* Wyraźna hierarchia: główne kategorie i kolejne poziomy */
+.vehicle{border:1px solid #c7d5dc;border-left:5px solid #176b87;box-shadow:0 7px 22px #102a4314}
+.vehicle-head.vehicle-toggle{background:linear-gradient(100deg,#e8f2f6 0%,#fff 75%);min-height:66px}
+.vehicle-head.vehicle-toggle .vehicle-title h3{font-size:20px;font-weight:850;color:#102a43;letter-spacing:.2px}
+.vehicle-head.vehicle-toggle .chev{background:#d8eaf0;border-radius:9px;width:32px;height:32px;display:grid;place-items:center;font-weight:800}
+.vehicle-details{background:#f8fafb}
+.vehicle-details>.category-list{gap:12px}
+.category{border-radius:13px}
+.root-category{border:1px solid #174b63;border-left:5px solid #0e526e;box-shadow:0 3px 10px #102a4312}
+.root-category-head{background:linear-gradient(100deg,#123c55,#176b87)!important;color:#fff!important;padding:15px 13px;min-height:57px}
+.root-category-head .cat-name{font-size:15px;font-weight:850;letter-spacing:.25px}
+.root-category-head .cat-count{color:#e0edf2;background:#ffffff20;border:1px solid #ffffff30;border-radius:20px;padding:3px 7px;white-space:nowrap}
+.root-category-head .chev{color:#fff;background:#ffffff20;border-radius:8px;width:27px;height:27px;display:grid;place-items:center;font-weight:800}
+.level-mark{font-size:9px;line-height:1;font-weight:850;letter-spacing:.65px;padding:5px 6px;border-radius:5px;background:#ffffff20;color:#e8f3f7;white-space:nowrap}
+.root-category .cat-body{background:#fff;padding:14px}
+.child-category{margin-top:2px;border:1px solid #c9d9e1;border-left:4px solid #72a8bb;background:#fff}
+.child-category-head{background:#eaf2f5!important;color:#173c4d!important;padding:12px 10px;gap:7px;border-radius:0}
+.child-category-head .level-mark{background:#d2e5ec;color:#28566a;font-size:8px}
+.child-category-head .cat-name{font-size:14px;font-weight:800}
+.child-category-head .cat-count{font-size:11px;background:#fff;border:1px solid #d4e1e6;border-radius:15px;padding:2px 6px;white-space:nowrap}
+.child-category-head .chev{background:#d7e8ee;border-radius:7px;width:25px;height:25px;display:grid;place-items:center;font-weight:800}
+.child-category .cat-body{background:#fbfdfe;padding:12px;border-top:1px solid #dce8ed}
+.child-list{margin-top:10px;padding:10px 0 0 10px;border-left:2px dashed #a9c4cf}
+.child-list .child-list{margin-left:3px;padding-left:9px}
+.child-add button{border:1px dashed #8bb1c0;background:#f0f7f9;color:#1b586f}
+@media(max-width:420px){
+ .top{padding:16px 14px 12px}
+ .top h1{font-size:19px}
+ .tag{font-size:9px;padding:4px 6px}
+ .hero-vehicles{height:105px}
+ .root-category-head{gap:6px;padding:13px 8px}
+ .root-category-head .cat-name{font-size:13px}
+ .root-category-head .cat-count{font-size:10px;padding:3px 5px}
+ .level-mark{font-size:8px;padding:4px 5px}
+ .child-category-head{gap:5px;padding:11px 7px}
+ .child-category-head .cat-name{font-size:12px}
+ .child-category-head .cat-count{font-size:10px}
+ .nested-category{margin-left:calc(var(--depth,0) * 6px)}
+}

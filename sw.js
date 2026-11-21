@@ -1,5 +1,5 @@
-const CACHE_NAME = "serial-scanner-shell-v2";
-const APP_FILES = ["./", "./index.html", "./style.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
+const CACHE_NAME = "zssw30-scaner-shell-v3";
+const APP_FILES = ["./", "./index.html", "./style.css", "./app.js", "./manifest.webmanifest", "./icon.svg", "./vehicles-banner.webp"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)));
   self.skipWaiting();

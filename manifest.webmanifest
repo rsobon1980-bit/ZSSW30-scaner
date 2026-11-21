@@ -1,7 +1,7 @@
 {
-  "name": "Serial Scanner — ZSSW-30",
-  "short_name": "Serial Scanner",
-  "description": "Lokalna ewidencja numerów seryjnych urządzeń",
+  "name": "ZSSW30 Scaner",
+  "short_name": "ZSSW30 Scaner",
+  "description": "Lokalna ewidencja numerów seryjnych urządzeń w wozach ZSSW-30",
   "lang": "pl",
   "start_url": "./",
   "scope": "./",

@@ -4,18 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#102a43">
+<meta name="application-name" content="ZSSW30 Scaner">
 <meta name="description" content="Lokalna ewidencja numerów seryjnych urządzeń w wozach ZSSW-30">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./style.css">
-<title>Serial Scanner — ZSSW-30</title>
+<title>ZSSW30 Scaner</title>
 </head>
 <body>
 <div class="app">
   <header class="top">
-    <div class="logo">▦</div>
-    <div><h1>Serial Scanner</h1><p>Ewidencja urządzeń • ZSSW-30</p></div>
-    <span class="tag">TRYB LOKALNY</span>
+    <div class="top-brand">
+      <div class="logo">Z30</div>
+      <div><h1>ZSSW30 Scaner</h1><p>Ewidencja urządzeń i numerów seryjnych</p></div>
+      <span class="tag">TRYB LOKALNY</span>
+    </div>
+    <img class="hero-vehicles" src="./vehicles-banner.webp" alt="Ilustracja poglądowa: BWP Borsuk i KTO Rosomak z wieżami ZSSW-30">
+    <p class="hero-caption">BWP Borsuk • KTO Rosomak • ZSSW-30 <span>Ilustracja poglądowa</span></p>
   </header>
 
   <section class="panel">
@@ -43,7 +48,7 @@
     <div class="notice">Dane są zapisywane lokalnie w pamięci tej przeglądarki. Nie są wysyłane na serwer. Regularnie zapisuj kopię zapasową, aby przenieść ewidencję na inny telefon lub odzyskać ją po utracie danych przeglądarki.</div>
     <div id="globalStatus" class="status" role="status"></div>
   </section>
-  <footer>Serial Scanner • Dane pozostają na tym urządzeniu</footer>
+  <footer>ZSSW30 Scaner • Dane pozostają na tym urządzeniu</footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
