@@ -1,0 +1,13 @@
+{
+  "name": "Serial Scanner — ZSSW-30",
+  "short_name": "Serial Scanner",
+  "description": "Lokalna ewidencja numerów seryjnych urządzeń",
+  "lang": "pl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f6f8",
+  "theme_color": "#102a43",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

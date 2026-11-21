@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#102a43">
+<meta name="description" content="Lokalna ewidencja numerów seryjnych urządzeń w wozach ZSSW-30">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+<title>Serial Scanner — ZSSW-30</title>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo">▦</div>
+    <div><h1>Serial Scanner</h1><p>Ewidencja urządzeń • ZSSW-30</p></div>
+    <span class="tag">TRYB LOKALNY</span>
+  </header>
+
+  <section class="panel">
+    <div class="section-head"><h2>Dodaj nowy wóz</h2><span class="muted">01</span></div>
+    <form id="addForm" class="field">
+      <input id="newVehicle" class="input" placeholder="Numer rejestracyjny wozu" autocomplete="off" required>
+      <button class="primary" type="submit">OK</button>
+    </form>
+    <p class="muted">Po dodaniu automatycznie pojawią się cztery podkategorie.</p>
+  </section>
+
+  <section class="panel">
+    <div class="section-head"><h2>Twoja ewidencja</h2><span id="vehicleCount" class="muted">0 wozów</span></div>
+    <div id="vehicles"><div class="empty"><div class="big">▣</div>Nie dodano jeszcze żadnego wozu.</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head"><h2>Kopie i eksport</h2><span class="muted">Dane w telefonie</span></div>
+    <div class="toolbar">
+      <button id="exportAll" class="secondary">⇩ Eksport Excel — wszystkie</button>
+      <button id="backup" class="secondary">⬇ Kopia zapasowa</button>
+      <label class="ghost file-btn">↥ Przywróć kopię<input id="restoreFile" type="file" accept="application/json,.json"></label>
+      <button id="helpDrive" class="ghost">Google Drive — instrukcja</button>
+    </div>
+    <div class="notice">Dane są zapisywane lokalnie w pamięci tej przeglądarki. Nie są wysyłane na serwer. Regularnie zapisuj kopię zapasową, aby przenieść ewidencję na inny telefon lub odzyskać ją po utracie danych przeglądarki.</div>
+    <div id="globalStatus" class="status" role="status"></div>
+  </section>
+  <footer>Serial Scanner • Dane pozostają na tym urządzeniu</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
