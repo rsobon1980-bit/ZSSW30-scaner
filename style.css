@@ -101,3 +101,6 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
  .child-category-head .cat-count{font-size:10px}
  .nested-category{margin-left:calc(var(--depth,0) * 6px)}
 }
+
+/* Znak liścia zamiast kwadratu Z30 w nagłówku */
+.wb-mark{display:block;width:46px;height:46px;flex:0 0 46px;object-fit:contain;padding:7px;background:#000;border:1px solid #252525;border-radius:10px;box-shadow:0 2px 8px #0005}

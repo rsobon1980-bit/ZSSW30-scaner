@@ -13,6 +13,7 @@ Mobilna aplikacja PWA do lokalnej ewidencji numerów seryjnych urządzeń w woza
 - Kopia zapasowa i przywracanie danych z pliku JSON.
 - Lokalna baza IndexedDB; aplikacja nie wysyła ewidencji na serwer.
 - Ilustracja poglądowa BWP Borsuk i KTO Rosomak z wieżami ZSSW-30.
+- W nagłówku sam znak liścia na czarnym tle zamiast kwadratu z napisem Z30.
 - Service worker umożliwia ponowne uruchamianie aplikacji offline po pierwszym załadowaniu.
 
 ## Publikacja na GitHub Pages
