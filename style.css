@@ -38,3 +38,16 @@ textarea{resize:vertical;min-height:72px}
 .status{font-size:12px;color:var(--muted);margin-top:8px;min-height:18px}
 footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 @media(min-width:600px){.app{padding-left:20px;padding-right:20px}.top{margin-left:-20px;margin-right:-20px;padding-left:24px;padding-right:24px}.category-list{padding:0 14px 14px}}
+/* Uproszczona lista wozów i wielopoziomowe podkategorie */
+.vehicle-head.vehicle-toggle{width:100%;border-radius:0;background:#fff;color:var(--ink);text-align:left;align-items:center;padding:17px 16px}
+.vehicle-head.vehicle-toggle .vehicle-title h3{font-size:19px}
+.vehicle-head.vehicle-toggle .chev{font-size:22px}
+.vehicle-details{padding:0 14px 14px;border-top:1px solid var(--line)}
+.vehicle-details>.vehicle-actions{justify-content:flex-end;padding:12px 0 4px}
+.vehicle-details>.comment-label{margin-top:8px}
+.vehicle-details>.category-list{padding:12px 0 0}
+.nested-category{margin-left:calc(var(--depth,0) * 9px)}
+.child-list{padding:9px 0 0 10px;gap:8px}
+.child-add{margin:12px 0 4px}
+.child-add button{width:100%;text-align:center}
+@media(max-width:420px){.nested-category{margin-left:calc(var(--depth,0) * 5px)}.vehicle-details{padding-left:10px;padding-right:10px}}
