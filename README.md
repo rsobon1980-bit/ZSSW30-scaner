@@ -40,3 +40,6 @@ Nagłówek zawiera zdjęcia KTO Rosomak i BWP Borsuk oraz logo przesłane przez 
 
 ## Zmiany v8
 Na poziomie 2 i głębszych podkategoriach komentarz do konkretnego numeru seryjnego jest wyświetlany w tej samej ramce pod numerem. Ikona przy numerze otwiera edycję. Komentarze są zapisywane w IndexedDB, kopii JSON i osobnej kolumnie eksportu Excel. Liczniki numerów pozostają bez zmian.
+
+## Zmiany v9
+Komentarze do numerów seryjnych są wyświetlane w ramce pod numerem także w kategoriach głównych (poziom 1). Ikona umożliwia dodanie i edycję komentarza na każdym poziomie. Liczniki bez zmian.
