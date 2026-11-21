@@ -66,3 +66,7 @@ Podkategorie od poziomu 2 mają przyciski edycji nazwy i usuwania. Usunięcie po
 - Edycja/usuwanie podkategorii i numerów seryjnych: kolorowe przyciski ikonowe.
 - Wersjonowane pliki CSS/JS oraz sieciowo-pierwsze aktualizacje stron w service workerze.
 - Dane IndexedDB nie są czyszczone podczas aktualizacji. Przed wgraniem zalecana kopia JSON.
+
+
+## Wersja v16
+Podkategorie poziomu 2 w BZ-05 (także Własna) mają limit jednego numeru seryjnego. Po zapisaniu numeru formularz dodawania i skanowania znika; po usunięciu wraca. Pozostałe podkategorie bez zmian.
