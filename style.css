@@ -141,3 +141,33 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 
 .subcategory-management{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #dce8ed}
 .subcategory-management button{min-height:36px}
+
+/* v13: consistent colored, compact icon controls */
+.icon-action{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;padding:0;border-radius:11px;border:1px solid transparent;cursor:pointer;transition:filter .15s ease,transform .15s ease}
+.icon-action:active{transform:scale(.96)}
+.icon-action:focus-visible,.icon-scan:focus-within{outline:3px solid #60a5fa;outline-offset:2px}
+.icon-edit{color:#60a5fa;background:#e7f1ff;border-color:#bcd9ff}
+.icon-delete{color:#ef555e;background:#fff0f1;border-color:#ffd5d9}
+.icon-add{color:#0899b5;background:#ddf8fb;border-color:#a8eaf2}
+.ui-svg{display:block;flex-shrink:0}
+.subcategory-management{justify-content:flex-end;gap:9px}
+.subcategory-management .icon-action{min-height:40px}
+.serial-actions{align-items:center;gap:5px;flex-wrap:nowrap}
+.serial-actions .icon-action{padding:0;width:38px;height:38px}
+.serial-comment-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;color:#8799a9;background:#f0f3f6;border-color:#d7e0e8}
+.serial-comment-icon.has-comment{color:#60a5fa;background:#e7f1ff;border-color:#bcd9ff}
+.comment-icon{color:#8799a9;background:#f0f3f6}
+.comment-icon.has-comment{color:#60a5fa;background:#e7f1ff;border-color:#bcd9ff}
+.serial-form .icon-add{min-height:46px;width:46px}
+.icon-scan{gap:9px;color:#327db1;background:#e8f2fc;border:1px solid #c6dcf1}
+.child-add button{display:flex;align-items:center;justify-content:center;gap:8px}
+.icon-chevron{display:inline-flex;align-items:center;justify-content:center}
+.icon-chevron svg{transition:transform .15s ease}
+.icon-chevron.is-open svg{transform:rotate(180deg)}
+@media(max-width:420px){.serial-actions{gap:3px}.serial-actions .icon-action,.serial-actions .serial-comment-icon{width:34px;height:36px}.serial-value{font-size:14px}}
+
+/* v14: kompaktowe, kolorowe ikony w panelach */
+.subcategory-management{justify-content:flex-end;margin-top:0}
+.subcategory-management .icon-action{font-size:0}
+.icon-action .ui-svg,.serial-comment-icon .ui-svg{width:20px;height:20px}
+.child-category .child-add{display:none!important}

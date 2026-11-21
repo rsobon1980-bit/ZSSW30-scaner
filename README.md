@@ -5,7 +5,9 @@ Mobilna aplikacja PWA do lokalnej ewidencji numerów seryjnych urządzeń w woza
 ## Funkcje
 - Ekran główny z listą numerów rejestracyjnych wozów.
 - Wyraźnie wyróżnione cztery kategorie główne: BZZ-01, BZ-05, KWN-01, DES-40.
-- Rozwijane, wielopoziomowe podkategorie z odrębnym stylem dla każdego poziomu.
+- Podkategorie poziomu 2 dodawane wyłącznie z kategorii głównej; bez możliwości tworzenia kolejnych poziomów. Istniejące starsze zagnieżdżone dane pozostają widoczne.
+- Edycja nazwy i usuwanie podkategorii poziomu 2 z potwierdzeniem.
+- Jeden numer seryjny na kategorię główną, wiele numerów w podkategoriach poziomu 2.
 - Ręczne wpisywanie numerów seryjnych oraz OCR tekstu z aparatu.
 - Opcjonalne komentarze do wozu i każdej podkategorii.
 - Edycja i usuwanie zapisanych numerów.
@@ -51,3 +53,16 @@ Podkategorie od poziomu 2 mają przyciski edycji nazwy i usuwania. Usunięcie po
 ## Wersja 11
 - W każdej kategorii głównej można dodać tylko jeden numer seryjny. Po zapisaniu znika formularz ręcznego dodawania oraz przycisk skanowania; edycja i usuwanie pozostają dostępne.
 - Podkategorie poziomu 2 i głębsze zachowują możliwość dodawania wielu numerów oraz edycję i usuwanie podkategorii.
+
+## Wersja v13
+- Kolorowe ikony: niebieska edycja i komentarz, czerwone usuwanie, turkusowe dodawanie, jasnoniebieski aparat.
+- Przyciski edycji/usuwania podkategorii poziomu 2 są ikonami.
+- Przycisk dodawania podkategorii dostępny tylko w kategorii głównej.
+- Liczniki, ograniczenie jednego numeru w kategorii głównej, komentarze i eksport zachowane.
+
+
+## Wersja 14
+- Poziom 2: bez opcji dodawania kolejnych podkategorii.
+- Edycja/usuwanie podkategorii i numerów seryjnych: kolorowe przyciski ikonowe.
+- Wersjonowane pliki CSS/JS oraz sieciowo-pierwsze aktualizacje stron w service workerze.
+- Dane IndexedDB nie są czyszczone podczas aktualizacji. Przed wgraniem zalecana kopia JSON.
