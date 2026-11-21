@@ -2,7 +2,7 @@
 "use strict";
 const CATS=["BZZ-01","BZ-05","KWN-01","DES-40"];
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
-let db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), worker=null;
+let db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), openComments=new Set(), worker=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const stamp=()=>new Date().toISOString();
@@ -17,8 +17,10 @@ function normalizeVehicle(v){v.categories=(v.categories||[]).map(normalizeNode);
 async function refresh(){vehicles=(await all()).map(normalizeVehicle).sort((a,b)=>a.reg.localeCompare(b.reg,"pl",{numeric:true}));render();}
 function countSerials(nodes){return nodes.reduce((sum,n)=>sum+(n.serials?.length||0)+countSerials(n.children||[]),0);}
 function findNode(v,id,nodes=v.categories){for(const n of nodes){if(n.id===id)return n;const found=findNode(v,id,n.children||[]);if(found)return found;}return null;}
+function commentButton(id,nodeId,comment){const nodeAttr=nodeId?` data-node="${esc(nodeId)}"`:"";return `<button type="button" class="comment-icon ${comment?.trim()?"has-comment":""}" data-action="toggle-comment" data-id="${esc(id)}"${nodeAttr} aria-label="${comment?.trim()?"Otwórz zapisany komentarz":"Dodaj komentarz"}" title="${comment?.trim()?"Zapisany komentarz":"Dodaj komentarz"}"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 8 9 9 0 0 1-4-.9L3 20l1.4-5A8.5 8.5 0 1 1 20 11.5Z"/><path d="M8 11.5h8"/></svg></button>`;}
+function commentPanel(v,n){const nodeId=n?.id, k=v.id+"|"+(nodeId||"vehicle");if(!openComments.has(k))return "";const action=nodeId?"node-comment":"vehicle-comment",fieldId="comment-"+(nodeId||v.id),nodeAttr=nodeId?` data-node="${esc(nodeId)}"`:"";return `<div class="comment-panel"><label class="comment-label" for="${fieldId}">Komentarz ${nodeId?"do podkategorii":"do wozu"} (opcjonalnie)</label><textarea id="${fieldId}" data-action="${action}" data-id="${esc(v.id)}"${nodeAttr} placeholder="Wpisz komentarz...">${esc(nodeId?n.comment:v.comment)}</textarea><button type="button" class="secondary small comment-done" data-action="close-comment" data-id="${esc(v.id)}"${nodeAttr}>Gotowe</button></div>`;}
 function renderNode(v,n,depth=0){const key=v.id+"|"+n.id,opened=openNodes.has(key),count=countSerials(n.children||[])+n.serials.length;
-return `<section class="category nested-category ${depth===0?"root-category":"child-category"}" style="--depth:${Math.min(depth,7)}"><button class="cat-head ${depth===0?"root-category-head":"child-category-head"}" data-action="toggle-node" data-id="${v.id}" data-node="${n.id}"><span class="level-mark">${depth===0?"GŁÓWNA":"POZIOM "+(depth+1)}</span><span class="cat-name">${esc(n.name)}</span><span class="cat-count">${count} nr</span><span class="chev">${opened?"−":"+"}</span></button>
+return `<section class="category nested-category ${depth===0?"root-category":"child-category"}" style="--depth:${Math.min(depth,7)}"><button class="cat-head ${depth===0?"root-category-head":"child-category-head"}" data-action="toggle-node" data-id="${v.id}" data-node="${n.id}"><span class="level-mark">${depth===0?"GŁÓWNA":"POZIOM "+(depth+1)}</span><span class="cat-name">${esc(n.name)}</span><span class="cat-count">${count} nr</span><span class="chev">${opened?"−":"+"}</span></button>${commentButton(v.id,n.id,n.comment)}
 ${opened?`<div class="cat-body">
 <div class="muted">Dodaj numer seryjny ręcznie lub zeskanuj tekst aparatem.</div>
 <div class="serial-form"><input class="input" id="serial-${n.id}" placeholder="Numer seryjny" autocomplete="off"><button class="primary small" data-action="add-serial" data-id="${v.id}" data-node="${n.id}">Dodaj</button></div>
@@ -27,19 +29,21 @@ ${opened?`<div class="cat-body">
 <div class="serial-list">${n.serials.length?n.serials.map(s=>`<div class="serial-row"><span class="serial-value">${esc(s.value)}</span><div class="serial-actions"><button class="ghost" data-action="edit-serial" data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}">Edytuj</button><button class="danger" data-action="delete-serial" data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}">×</button></div></div>`).join(""):'<div class="muted">Brak zapisanych numerów.</div>'}</div>
 <div class="child-add"><button class="secondary small" data-action="add-child" data-id="${v.id}" data-node="${n.id}">＋ Dodaj podkategorię</button></div>
 ${n.children?.length?`<div class="category-list child-list">${n.children.map(ch=>renderNode(v,ch,depth+1)).join("")}</div>`:""}
-<label class="comment-label" for="comment-${n.id}">Komentarz (opcjonalnie)</label><textarea id="comment-${n.id}" data-action="node-comment" data-id="${v.id}" data-node="${n.id}" placeholder="Dodaj komentarz do tej podkategorii...">${esc(n.comment)}</textarea>
+${commentPanel(v,n)}
 </div>`:""}</section>`;}
 function render(){
  $("vehicleCount").textContent=vehicles.length+ (vehicles.length===1?" wóz":(vehicles.length%10>=2&&vehicles.length%10<=4&&!(vehicles.length%100>=12&&vehicles.length%100<=14)?" wozy":" wozów"));
  if(!vehicles.length){$("vehicles").innerHTML='<div class="empty"><div class="big">▣</div>Nie dodano jeszcze żadnego wozu.</div>';return;}
- $("vehicles").innerHTML=vehicles.map(v=>{const opened=openVehicles.has(v.id);return `<article class="vehicle"><button class="vehicle-head vehicle-toggle" data-action="toggle-vehicle" data-id="${v.id}"><div class="vehicle-title"><h3>${esc(v.reg)}</h3></div><span class="chev">${opened?"−":"+"}</span></button>${opened?`<div class="vehicle-details"><div class="vehicle-actions"><button class="small ghost" data-action="export-one" data-id="${v.id}">Excel tego wozu</button><button class="small danger" data-action="delete-vehicle" data-id="${v.id}">Usuń wóz</button></div>
-<label class="comment-label" for="vc-${v.id}">Komentarz do wozu (opcjonalnie)</label><textarea id="vc-${v.id}" data-action="vehicle-comment" data-id="${v.id}" placeholder="Dodaj ogólny komentarz...">${esc(v.comment)}</textarea>
+ $("vehicles").innerHTML=vehicles.map(v=>{const opened=openVehicles.has(v.id);return `<article class="vehicle"><button class="vehicle-head vehicle-toggle" data-action="toggle-vehicle" data-id="${v.id}"><div class="vehicle-title"><h3>${esc(v.reg)}</h3></div><span class="chev">${opened?"−":"+"}</span></button>${commentButton(v.id,null,v.comment)}${opened?`<div class="vehicle-details"><div class="vehicle-actions"><button class="small ghost" data-action="export-one" data-id="${v.id}">Excel tego wozu</button><button class="small danger" data-action="delete-vehicle" data-id="${v.id}">Usuń wóz</button></div>
+${commentPanel(v,null)}
 <div class="category-list">${v.categories.map(n=>renderNode(v,n)).join("")}</div></div>`:""}</article>`;}).join("");
 }
 function setStatus(id,msg){const el=$(id);if(el)el.textContent=msg;}
 async function updateVehicle(id,fn){const v=vehicles.find(x=>x.id===id);if(!v)return;fn(v);await put(v);await refresh();}
 $("addForm").addEventListener("submit",async e=>{e.preventDefault();const input=$("newVehicle"),reg=input.value.trim();if(!reg)return;if(vehicles.some(v=>v.reg.toLowerCase()===reg.toLowerCase())){alert("Taki numer rejestracyjny jest już na liście.");return;}await put(freshVehicle(reg));input.value="";await refresh();});
 $("vehicles").addEventListener("click",async e=>{const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action,id=b.dataset.id,nodeId=b.dataset.node;
+ if(a==="toggle-comment"){const k=id+"|"+(nodeId||"vehicle");openComments.has(k)?openComments.delete(k):openComments.add(k);if(!nodeId)openVehicles.add(id);else{openVehicles.add(id);openNodes.add(id+"|"+nodeId);}render();}
+ if(a==="close-comment"){const el=b.parentElement?.querySelector("textarea");if(el){await updateVehicle(id,v=>{if(nodeId){const n=findNode(v,nodeId);if(n)n.comment=el.value;}else v.comment=el.value;});}openComments.delete(id+"|"+(nodeId||"vehicle"));render();}
  if(a==="toggle-vehicle"){openVehicles.has(id)?openVehicles.delete(id):openVehicles.add(id);render();}
  if(a==="toggle-node"){const k=id+"|"+nodeId;openNodes.has(k)?openNodes.delete(k):openNodes.add(k);render();}
  if(a==="add-child"){const name=prompt("Nazwa nowej podkategorii:");if(name?.trim()){const child=newNode(name.trim());await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n)n.children.push(child);});openNodes.add(id+"|"+nodeId);openNodes.add(id+"|"+child.id);render();}}

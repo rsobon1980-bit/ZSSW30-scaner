@@ -112,3 +112,17 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 .hero-photos img{display:block;width:100%;height:clamp(100px,22vw,175px);object-fit:cover;object-position:center 60%}
 .hero-photos figcaption{color:#e6f0f5;text-align:center;font-size:12px;font-weight:700;padding:6px 4px}
 @media(max-width:420px){.hero-photos{gap:7px}.hero-photos img{height:108px}.hero-photos figcaption{font-size:11px}}
+
+/* v7: komentarze otwierane ikoną, liczniki pozostają widoczne */
+.category.nested-category{position:relative}
+.category.nested-category>.cat-head{padding-right:57px}
+.category.nested-category>.comment-icon{position:absolute;top:5px;right:7px}
+.vehicle{position:relative}
+.vehicle>.vehicle-head{padding-right:60px}
+.vehicle>.comment-icon{position:absolute;right:12px;top:9px}
+.comment-icon{display:flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border-radius:10px;border:1px solid #c5d1db;background:#edf1f5;color:#697988;cursor:pointer;z-index:1}
+.comment-icon.has-comment{background:#e5f0ff;border-color:#85b5f8;color:#1663b7}
+.comment-icon:focus-visible{outline:3px solid #4c9aff;outline-offset:2px}
+.comment-panel{padding:8px 0 12px}
+.comment-panel textarea{display:block;width:100%;box-sizing:border-box}
+.comment-done{display:block;margin:8px 0 0 auto}
