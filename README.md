@@ -43,3 +43,11 @@ Na poziomie 2 i głębszych podkategoriach komentarz do konkretnego numeru seryj
 
 ## Zmiany v9
 Komentarze do numerów seryjnych są wyświetlane w ramce pod numerem także w kategoriach głównych (poziom 1). Ikona umożliwia dodanie i edycję komentarza na każdym poziomie. Liczniki bez zmian.
+
+
+## Wersja v10
+Podkategorie od poziomu 2 mają przyciski edycji nazwy i usuwania. Usunięcie po potwierdzeniu obejmuje całą zawartość i podkategorie podrzędne.
+
+## Wersja 11
+- W każdej kategorii głównej można dodać tylko jeden numer seryjny. Po zapisaniu znika formularz ręcznego dodawania oraz przycisk skanowania; edycja i usuwanie pozostają dostępne.
+- Podkategorie poziomu 2 i głębsze zachowują możliwość dodawania wielu numerów oraz edycję i usuwanie podkategorii.
