@@ -315,3 +315,7 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
   background:#d9ebf2; color:#226680;
 }
 :root[data-theme="dark"] select option { background:#172c3c; color:#f0f8fc; }
+
+/* v30: licznik wszystkich wozów w nagłówku dodawania */
+.vehicle-count-badge{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0;min-width:48px;padding:5px 10px;border-radius:9px;background:color-mix(in srgb,var(--blue) 15%,var(--card));color:var(--ink);font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;border:1px solid var(--line)}
+.vehicle-count-badge svg{color:var(--blue);flex-shrink:0}

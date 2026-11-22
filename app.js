@@ -47,6 +47,7 @@ ${n.children?.length?`<div class="category-list child-list">${n.children.map(ch=
 ${commentPanel(v,n)}
 </div>`:""}</section>`;}
 function render(){
+ $("addVehicleCount").textContent=String(vehicles.length);
  $("vehicleCount").textContent=vehicles.length+ (vehicles.length===1?" wóz":(vehicles.length%10>=2&&vehicles.length%10<=4&&!(vehicles.length%100>=12&&vehicles.length%100<=14)?" wozy":" wozów"));
  if(!vehicles.length){$("vehicles").innerHTML='<div class="empty"><div class="big">▣</div>Nie dodano jeszcze żadnego wozu.</div>';return;}
  $("vehicles").innerHTML=vehicles.map(v=>{const opened=openVehicles.has(v.id);return `<article class="vehicle"><button class="vehicle-head vehicle-toggle" data-action="toggle-vehicle" data-id="${v.id}"><div class="vehicle-title"><h3>${esc(v.reg)}</h3></div><span class="chev icon-chevron ${opened?"is-open":""}">${uiIcon("chevron")}</span></button>${commentButton(v.id,null,v.comment)}${opened?`<div class="vehicle-details"><div class="vehicle-actions"><button class="small ghost" data-action="export-one" data-id="${v.id}">Excel tego wozu</button><button class="small danger" data-action="delete-vehicle" data-id="${v.id}">Usuń wóz</button></div>

@@ -124,3 +124,9 @@ W górnej części aplikacji dodano wybór Jasny / Dark Mode. Ustawienie jest pr
 - Naprawiono kontrast nazw podkategorii w motywie Ciemnym, w tym DES-40.
 - Poprawiono kontrast liczników i list rozwijanych.
 - Bez zmian w danych i funkcjach aplikacji.
+
+
+## v30 — licznik wszystkich wozów
+- Zamiast statycznego „01” w nagłówku „Dodaj nowy wóz” wyświetla się ikona pojazdu i rzeczywista liczba wozów.
+- Licznik aktualizuje się po dodaniu, usunięciu i przywróceniu kopii zapasowej.
+- Obsługuje motywy Jasny i Ciemny. Dane użytkownika pozostają w IndexedDB.
