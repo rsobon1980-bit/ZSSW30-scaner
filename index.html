@@ -9,8 +9,8 @@
 <link rel="manifest" href="./manifest.webmanifest?v=36">
 <link rel="icon" href="./icon-v36-192.png" type="image/png">
 <link rel="apple-touch-icon" href="./apple-touch-icon-v36.png">
-<link rel="stylesheet" href="./style.css?v=34">
-<title>ZSSW30 Scaner v36</title>
+<link rel="stylesheet" href="./style.css?v=37">
+<title>ZSSW30 Scaner v37</title>
 <script>
 (function(){try{document.documentElement.dataset.theme=localStorage.getItem('zssw30-theme')==='light'?'light':'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();
 </script>
@@ -57,6 +57,18 @@
   <footer>ZSSW30 Scaner • Dane pozostają na tym urządzeniu</footer>
 </div>
 
+
+<div id="restoreOverlay" class="restore-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="restoreTitle">
+ <div class="restore-card">
+  <h2 id="restoreTitle">Przywracanie kopii zapasowej</h2>
+  <p id="restoreFileInfo" class="restore-hint"></p>
+  <label class="restore-option"><input type="radio" name="restoreMode" value="merge" checked><span><strong>Dodaj do istniejących danych</strong><small>Zachowaj obecne wozy. Dodaj tylko wozy z nowymi numerami rejestracyjnymi; powtarzające się pomiń.</small></span></label>
+  <label class="restore-option"><input type="radio" name="restoreMode" value="replace"><span><strong>Nadpisz wszystkie dane</strong><small>Zastąp całą obecną ewidencję zawartością wybranej kopii.</small></span></label>
+  <p id="restoreWarning" class="restore-warning" hidden>Uwaga: wszystkie obecne dane zostaną zastąpione. Przed kontynuowaniem warto zapisać kopię zapasową.</p>
+  <div class="restore-actions"><button id="restoreCancel" type="button" class="secondary">Anuluj</button><button id="restoreConfirm" type="button" class="primary">Przywróć kopię</button></div>
+ </div>
+</div>
+
 <div id="installOverlay" class="install-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="installTitle">
  <div class="install-card">
   <div class="install-mark"><img src="./install-logo.png" alt="Ikona ZSSW30 Scaner"></div>
@@ -74,7 +86,7 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="./app.js?v=34"></script>
+<script src="./app.js?v=37"></script>
 <script>
 (function(){
   const buttons={light:document.getElementById('themeLight'),dark:document.getElementById('themeDark')};

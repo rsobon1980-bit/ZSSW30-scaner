@@ -213,7 +213,56 @@ async function exportExcel(items){
 $("exportAll").addEventListener("click",()=>exportExcel(vehicles));
 function download(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 $("backup").addEventListener("click",()=>{const payload={app:"ZSSW30 Scaner",version:2,exportedAt:stamp(),vehicles};download("zssw30-scaner-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(payload,null,2),"application/json");setStatus("globalStatus","Kopia została przygotowana. Zapisz plik w telefonie lub prześlij go ręcznie na Google Drive.");});
-$("restoreFile").addEventListener("change",async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.vehicles))throw Error("Plik nie zawiera poprawnej ewidencji.");if(!confirm("Przywrócenie zastąpi aktualną ewidencję. Kontynuować?"))return;const tx=db.transaction(STORE,"readwrite"),store=tx.objectStore(STORE);store.clear();data.vehicles.forEach(v=>{if(v.id&&v.reg&&Array.isArray(v.categories))store.put(normalizeVehicle(v));});await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});await refresh();setStatus("globalStatus","Kopia została przywrócona.");}catch(err){alert("Nie udało się przywrócić kopii: "+err.message);}finally{e.target.value="";}});
+let pendingRestore=null;
+const restoreOverlay=$("restoreOverlay"),restoreWarning=$("restoreWarning");
+function closeRestore(){restoreOverlay.hidden=true;pendingRestore=null;$("restoreFile").value="";}
+function restoreMode(){return document.querySelector('input[name="restoreMode"]:checked')?.value||"merge";}
+document.querySelectorAll('input[name="restoreMode"]').forEach(r=>r.addEventListener("change",()=>{restoreWarning.hidden=restoreMode()!=="replace";}));
+$("restoreCancel").addEventListener("click",closeRestore);
+restoreOverlay.addEventListener("click",e=>{if(e.target===restoreOverlay)closeRestore();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!restoreOverlay.hidden)closeRestore();});
+$("restoreFile").addEventListener("change",async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ try{
+  const data=JSON.parse(await file.text());
+  if(!data||!Array.isArray(data.vehicles))throw Error("Plik nie zawiera poprawnej ewidencji wozów.");
+  const valid=data.vehicles.every(v=>v&&typeof v.reg==="string"&&v.reg.trim()&&Array.isArray(v.categories));
+  if(!valid)throw Error("Niektóre wozy w kopii mają nieprawidłowe dane. Nie wprowadzono żadnych zmian.");
+  pendingRestore=data.vehicles;
+  document.querySelector('input[name="restoreMode"][value="merge"]').checked=true;
+  restoreWarning.hidden=true;
+  $("restoreFileInfo").textContent=`Plik: ${file.name} • Wozów w kopii: ${pendingRestore.length} • Obecnie: ${vehicles.length}`;
+  restoreOverlay.hidden=false;
+ }catch(err){alert("Nie udało się odczytać kopii: "+err.message);e.target.value="";}
+});
+$("restoreConfirm").addEventListener("click",async()=>{
+ if(!pendingRestore)return;
+ const mode=restoreMode();
+ if(mode==="replace"&&!confirm("UWAGA! Wszystkie obecne wozy zostaną zastąpione danymi z pliku. Czy na pewno kontynuować?"))return;
+ const btn=$("restoreConfirm");btn.disabled=true;
+ try{
+  const existing=await all();
+  const existingRegs=new Set(mode==="merge"?existing.map(v=>v.reg.trim().toLocaleUpperCase("pl-PL")):[]);
+  const usedIds=new Set(mode==="merge"?existing.map(v=>v.id):[]);
+  const toAdd=[];let skipped=0;
+  for(const original of pendingRestore){
+   const reg=original.reg.trim(),key=reg.toLocaleUpperCase("pl-PL");
+   if(existingRegs.has(key)){skipped++;continue;}
+   existingRegs.add(key);
+   const v=normalizeVehicle(structuredClone(original));v.reg=reg;
+   if(!v.id||usedIds.has(v.id))v.id=crypto.randomUUID();
+   usedIds.add(v.id);toAdd.push(v);
+  }
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction(STORE,"readwrite"),store=tx.objectStore(STORE);
+   if(mode==="replace")store.clear();
+   toAdd.forEach(v=>store.put(v));
+   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error("Błąd zapisu"));tx.onabort=()=>reject(tx.error||Error("Przerwano zapis"));
+  });
+  closeRestore();await refresh();
+  setStatus("globalStatus",mode==="replace"?`Zastąpiono ewidencję. Przywrócono ${toAdd.length} wozów; pominięto ${skipped} duplikatów w pliku.`:`Dodano ${toAdd.length} wozów; pominięto ${skipped} powtarzających się numerów rejestracyjnych. Istniejące wozy zachowano.`);
+ }catch(err){alert("Nie udało się przywrócić kopii: "+err.message);}finally{btn.disabled=false;}
+});
 $("helpDrive").addEventListener("click",()=>alert("Aby zachować kopię na Google Drive:\n1. Wybierz „Kopia zapasowa”.\n2. Zapisz pobrany plik w telefonie.\n3. Otwórz aplikację Google Drive i prześlij ten plik.\n\nNa nowym telefonie pobierz plik z Drive i wybierz „Przywróć kopię”."));
 (async()=>{try{db=await openDB();await refresh();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});}catch(e){alert("Nie udało się uruchomić lokalnej bazy danych: "+e.message);}})();
 })();
