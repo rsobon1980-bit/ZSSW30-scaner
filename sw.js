@@ -1,5 +1,5 @@
-const CACHE_NAME = "zssw30-scaner-shell-v28";
-const APP_FILES = ["./index.html", "./style.css?v=27", "./app.js?v=27", "./manifest.webmanifest", "./icon.svg", "./rosomak.jpg", "./borsuk.jpg", "./wb-logo.png"];
+const CACHE_NAME = "zssw30-scaner-shell-v29";
+const APP_FILES = ["./index.html", "./style.css?v=29", "./app.js?v=29", "./manifest.webmanifest", "./icon.svg", "./rosomak.jpg", "./borsuk.jpg", "./wb-logo.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)));
   self.skipWaiting();

@@ -119,3 +119,8 @@ W górnej części aplikacji dodano wybór Jasny / Dark Mode. Ustawienie jest pr
 ## v28 — wygląd
 - Wybór motywu w ikonie obok TRYB LOKALNY; Jasny / Ciemny.
 - Ciemny domyślnie dla nowych instalacji; zapamiętany wybór użytkownika jest zachowany.
+
+## v29 — poprawka czytelności podkategorii
+- Naprawiono kontrast nazw podkategorii w motywie Ciemnym, w tym DES-40.
+- Poprawiono kontrast liczników i list rozwijanych.
+- Bez zmian w danych i funkcjach aplikacji.
