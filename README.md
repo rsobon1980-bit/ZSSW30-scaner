@@ -110,3 +110,7 @@ DES-40: przycisk Zmień rozwija pole wyboru Tak/Nie z przyciskami Zapisz i Anulu
 - Wynik obu trybów wymaga zatwierdzenia przed zapisaniem.
 - Eksport Excel: nagłówek ZSSW30 - numer wozu, bez kolumny Wykonano (DES-40), z filtrem.
 - OCR i biblioteki QR/Excel wymagają internetu przy pierwszym załadowaniu. Aparat wymaga HTTPS i zgody użytkownika.
+
+
+## v27 — Motyw jasny i ciemny
+W górnej części aplikacji dodano wybór Jasny / Dark Mode. Ustawienie jest przechowywane lokalnie w localStorage i nie zmienia danych pojazdów.

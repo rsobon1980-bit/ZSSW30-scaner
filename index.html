@@ -8,8 +8,11 @@
 <meta name="description" content="Lokalna ewidencja numerów seryjnych urządzeń w wozach ZSSW-30">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="./style.css?v=26">
-<title>ZSSW30 Scaner v26</title>
+<link rel="stylesheet" href="./style.css?v=27">
+<title>ZSSW30 Scaner v27</title>
+<script>
+(function(){try{document.documentElement.dataset.theme=localStorage.getItem('zssw30-theme')==='dark'?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}})();
+</script>
 </head>
 <body>
 <div class="app">
@@ -24,6 +27,14 @@
       <figure><img src="./borsuk.jpg" alt="BWP Borsuk z wieżą ZSSW-30"><figcaption>BWP Borsuk</figcaption></figure>
     </div>
   </header>
+
+  <section class="panel theme-settings" aria-label="Ustawienia wyglądu">
+    <div class="section-head"><h2>Wygląd aplikacji</h2><span class="muted">Motyw ekranu</span></div>
+    <div class="theme-choice" role="group" aria-label="Wybierz motyw">
+      <button type="button" id="themeLight" class="theme-option" aria-pressed="true">☀️ Jasny</button>
+      <button type="button" id="themeDark" class="theme-option" aria-pressed="false">🌙 Dark Mode</button>
+    </div>
+  </section>
 
   <section class="panel">
     <div class="section-head"><h2>Dodaj nowy wóz</h2><span class="muted">01</span></div>
@@ -55,6 +66,20 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="./app.js?v=26"></script>
+<script src="./app.js?v=27"></script>
+<script>
+(function(){
+  const buttons={light:document.getElementById('themeLight'),dark:document.getElementById('themeDark')};
+  function setTheme(theme){
+    document.documentElement.dataset.theme=theme;
+    for(const [key,button] of Object.entries(buttons)){button.setAttribute('aria-pressed',String(key===theme));}
+    const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='dark'?'#0d1724':'#102a43';
+    try{localStorage.setItem('zssw30-theme',theme);}catch(e){}
+  }
+  buttons.light.addEventListener('click',()=>setTheme('light'));
+  buttons.dark.addEventListener('click',()=>setTheme('dark'));
+  setTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');
+})();
+</script>
 </body>
 </html>

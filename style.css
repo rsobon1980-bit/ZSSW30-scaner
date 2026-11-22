@@ -245,3 +245,42 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 #qr-message{padding:10px 0;font-size:13px;min-height:34px}
 .qr-photo{background:#e8f2fc;color:#25678e}
 @media(max-width:370px){.scan-actions{grid-template-columns:1fr}}
+
+/* v27: persistent light/dark appearance */
+.theme-choice{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.theme-option{background:var(--card);color:var(--ink);border:1px solid var(--line);min-height:45px}
+.theme-option[aria-pressed="true"]{border-color:#0c92b6;background:#d9f1f7;color:#10536b;box-shadow:inset 0 0 0 1px #0c92b6}
+:root[data-theme="dark"]{color-scheme:dark;--navy:#0d1724;--blue:#197c9c;--bg:#0c1722;--card:#182a39;--ink:#e9f3f9;--muted:#a6bccb;--line:#355064;--red:#ff8b95}
+:root[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+:root[data-theme="dark"] .panel,:root[data-theme="dark"] .vehicle,:root[data-theme="dark"] .category{background:var(--card);border-color:var(--line);box-shadow:0 8px 24px #0003}
+:root[data-theme="dark"] .vehicle-details,:root[data-theme="dark"] .cat-body{background:#142534}
+:root[data-theme="dark"] .vehicle-head.vehicle-toggle{background:linear-gradient(100deg,#1a394d,#1a2c3c);color:var(--ink)}
+:root[data-theme="dark"] .vehicle-head.vehicle-toggle .vehicle-title h3{color:#eff9ff}
+:root[data-theme="dark"] .cat-head:not(.root-category-head){background:#21394b;color:var(--ink)}
+:root[data-theme="dark"] .category-toolbar.child-toolbar{background:#223b4b!important}
+:root[data-theme="dark"] .category-toolbar.child-toolbar>.cat-head{background:transparent!important;color:#f2f9fd}
+:root[data-theme="dark"] .child-category,:root[data-theme="dark"] .nested-category{border-color:#426378}
+:root[data-theme="dark"] .serial-row,:root[data-theme="dark"] .serial-card{background:#192f40;color:#f2f9fd;border-color:#395468}
+:root[data-theme="dark"] .input,:root[data-theme="dark"] textarea,:root[data-theme="dark"] select{background:#102435!important;color:#f0f8fc!important;border-color:#547084!important}
+:root[data-theme="dark"] input::placeholder,:root[data-theme="dark"] textarea::placeholder{color:#9bb0bf}
+:root[data-theme="dark"] .secondary,:root[data-theme="dark"] .ghost,:root[data-theme="dark"] .file-btn{background:#2b4557;color:#e4f2f8}
+:root[data-theme="dark"] .danger{background:#4b2935;color:#ffb3bb}
+:root[data-theme="dark"] .icon-edit{background:#1d3953;color:#80bbff;border-color:#355c83}
+:root[data-theme="dark"] .icon-delete{background:#4a2933;color:#ff9099;border-color:#70404b}
+:root[data-theme="dark"] .icon-add{background:#1c4a51;color:#64e1e9;border-color:#357780}
+:root[data-theme="dark"] .comment-icon,:root[data-theme="dark"] .serial-comment-icon{background:#2a4153;color:#b5c8d4;border-color:#4b6677}
+:root[data-theme="dark"] .comment-icon.has-comment,:root[data-theme="dark"] .serial-comment-icon.has-comment{background:#1b3e60;color:#80bbff}
+:root[data-theme="dark"] .category-toolbar.child-toolbar>.comment-icon,:root[data-theme="dark"] .category-toolbar.child-toolbar>.icon-action{background:transparent;border:0}
+:root[data-theme="dark"] .child-picker{background:#162f41;border-color:#486e82}
+:root[data-theme="dark"] .child-picker label{color:#d0e7f2}
+:root[data-theme="dark"] .des-answer-editor{background:#203a4b;border-color:#48677b;color:#e7f4fb}
+:root[data-theme="dark"] .des-answer-editor label{color:#e7f4fb}
+:root[data-theme="dark"] .des-answer{color:#bed2de}
+:root[data-theme="dark"] .notice{background:#393121;border-color:#77633c;color:#f5db9d}
+:root[data-theme="dark"] .empty{color:#b3c9d6}
+:root[data-theme="dark"] .scan-qr-btn,:root[data-theme="dark"] .qr-photo{background:#1d4a50;color:#b0f3f0;border-color:#3a7d80}
+:root[data-theme="dark"] .qr-panel{background:#1a3040;color:#eff8fd}
+:root[data-theme="dark"] .theme-option{background:#263e4f;color:#dcebf4;border-color:#466477}
+:root[data-theme="dark"] .theme-option[aria-pressed="true"]{background:#17526a;color:#e4faff;border-color:#4abbd9}
+:root[data-theme="dark"] .serial-comment-editor textarea{background:#102435;color:#f0f8fc}
+:root[data-theme="dark"] footer{color:#9eb4c3}
