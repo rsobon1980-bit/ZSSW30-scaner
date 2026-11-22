@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const APP_VERSION="25";
+const APP_VERSION="26";
 const CATS=["BZZ-01","BZ-05","KWN-01","DES-40"];
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
 let editAnswerOpen=new Set(), addChildOpen=new Set(), db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), openComments=new Set(), openSerialComments=new Set(), worker=null;
@@ -39,7 +39,7 @@ ${opened?`<div class="cat-body">
 
 ${desChild?"":`${singleSerialOnly(v,n)&&n.serials.length?"":`<div class="muted">Dodaj numer seryjny ręcznie lub zeskanuj tekst aparatem.</div>
 <div class="serial-form"><input class="input" id="serial-${n.id}" placeholder="Numer seryjny" autocomplete="off">${iconBtn("plus","add","add-serial",`data-id="${v.id}" data-node="${n.id}"`,"Dodaj numer seryjny")}</div>
-<label class="secondary small file-btn icon-scan" title="Skanuj numer aparatem">${uiIcon("camera")}<span>Skanuj aparatem</span><input type="file" accept="image/*" capture="environment" data-action="ocr" data-id="${v.id}" data-node="${n.id}"></label>
+<div class="scan-actions"><label class="secondary small file-btn icon-scan" title="Zrób zdjęcie naklejki N/S">${uiIcon("camera")}<span>Naklejka N/S (OCR)</span><input type="file" accept="image/*" capture="environment" data-action="ocr" data-id="${v.id}" data-node="${n.id}"></label><button type="button" class="secondary small scan-qr-btn" data-action="qr-camera" data-id="${v.id}" data-node="${n.id}">▦ Skanuj QR</button></div>
 <div class="status" id="ocr-${n.id}" role="status"></div>`}
 <div class="serial-list">${n.serials.length?n.serials.map(s=>{const serialKey=v.id+"|"+n.id+"|"+s.id,commentOpen=openSerialComments.has(serialKey),showInline=true;return `<div class="serial-row serial-card"><div class="serial-main"><span class="serial-value">${esc(s.value)}</span><div class="serial-actions">${showInline?`<button class="serial-comment-icon ${s.comment?.trim()?"has-comment":""}" type="button" data-action="toggle-serial-comment" data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}" title="${s.comment?.trim()?"Edytuj komentarz":"Dodaj komentarz"}" aria-label="Komentarz do numeru seryjnego">${uiIcon("comment")}</button>`:""}${iconBtn("pencil","edit","edit-serial",`data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}"`,"Edytuj numer seryjny")}${iconBtn("trash","delete","delete-serial",`data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}"`,"Usuń numer seryjny")}</div></div>${showInline&&s.comment?.trim()?`<div class="serial-comment-display"><span class="serial-comment-label">Komentarz</span><div>${esc(s.comment)}</div></div>`:""}${showInline&&commentOpen?`<div class="serial-comment-editor"><label for="serial-comment-${s.id}">Komentarz do numeru seryjnego (opcjonalnie)</label><textarea id="serial-comment-${s.id}" placeholder="Wpisz komentarz...">${esc(s.comment||"")}</textarea><button type="button" class="secondary small" data-action="save-serial-comment" data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}">Gotowe</button></div>`:""}</div>`;}).join(""):'<div class="muted">Brak zapisanych numerów.</div>'}</div>`}
 ${depth===0?`<div class="child-add"><button class="secondary small" data-action="add-child" data-id="${v.id}" data-node="${n.id}">${uiIcon("plus")}<span>Dodaj podkategorię</span></button>${childPicker(v,n)}</div>`:""}
@@ -72,6 +72,7 @@ await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&v.categories.some(x=
  if(a==="edit-answer"){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(n&&["Tak","Nie"].includes(n.answer)){const key=id+"|"+nodeId;editAnswerOpen.has(key)?editAnswerOpen.delete(key):editAnswerOpen.add(key);render();}}
  if(a==="cancel-answer"){editAnswerOpen.delete(id+"|"+nodeId);render();}
  if(a==="save-answer"){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);const value=document.getElementById("answer-"+nodeId)?.value;if(n&&["Tak","Nie"].includes(n.answer)&&["Tak","Nie"].includes(value)){editAnswerOpen.delete(id+"|"+nodeId);await updateVehicle(id,v=>{const target=findNode(v,nodeId);if(target)target.answer=value;});}}
+ if(a==="qr-camera"){await startQR(id,nodeId);return;}
  if(a==="add-serial"){const v0=vehicles.find(x=>x.id===id),n0=v0&&findNode(v0,nodeId);if(v0&&n0&&isDesChild(v0,n0))return;const inp=$("serial-"+nodeId),value=inp?.value.trim();if(!value)return;await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&(!singleSerialOnly(v,n)||n.serials.length===0))n.serials.push({id:crypto.randomUUID(),value,createdAt:stamp()});});openNodes.add(id+"|"+nodeId);}
  if(a==="toggle-serial-comment"){const k=id+"|"+nodeId+"|"+b.dataset.sid;openSerialComments.has(k)?openSerialComments.delete(k):openSerialComments.add(k);render();}
  if(a==="save-serial-comment"){const field=b.closest(".serial-card")?.querySelector(".serial-comment-editor textarea"),sid=b.dataset.sid;if(field){const value=field.value;await updateVehicle(id,v=>{const serial=findNode(v,nodeId)?.serials.find(s=>s.id===sid);if(serial)serial.comment=value;});}openSerialComments.delete(id+"|"+nodeId+"|"+sid);render();}
@@ -85,15 +86,79 @@ if(custom){custom.style.display=choice==="Własna"?"block":"none";if(choice==="W
 if(version){version.style.display=choice==="Własna"?"none":"block";const label=version.querySelector("label"),select=version.querySelector("select");if(label)label.textContent="2. Wybierz wersję "+choice;if(select){const values=category==="BZ-05"?(choice==="Slave"?["stary","nowy"]:["stara","nowa"]):["nowa","stara"];select.innerHTML=values.map(x=>`<option value="${x}">${x}</option>`).join("");}}
 return;}const el=e.target;if(el.dataset.action==="vehicle-comment")await updateVehicle(el.dataset.id,v=>v.comment=el.value);if(el.dataset.action==="node-comment")await updateVehicle(el.dataset.id,v=>{const n=findNode(v,el.dataset.node);if(n)n.comment=el.value;});if(el.dataset.action==="ocr")await runOCR(el);});
 $("vehicles").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches('input[id^="serial-"]')){e.preventDefault();const nodeId=e.target.id.slice(7);$("vehicles").querySelector(`[data-action="add-serial"][data-node="${nodeId}"]`)?.click();}});
-async function runOCR(input){const file=input.files?.[0];if(!file)return;const id=input.dataset.id,nodeId=input.dataset.node,status="ocr-"+nodeId;const vehicle=vehicles.find(v=>v.id===id);if(vehicle&&isDesChild(vehicle,findNode(vehicle,nodeId))){input.value="";return;}if(vehicle&&((n=>n&&singleSerialOnly(vehicle,n)&&n.serials.length)(findNode(vehicle,nodeId)))){input.value="";setStatus(status,"W tej kategorii można zapisać tylko jeden numer seryjny.");return;}try{setStatus(status,"Przygotowuję rozpoznawanie tekstu…");if(!window.Tesseract)throw Error("Biblioteka OCR nie została pobrana. Sprawdź połączenie z internetem.");if(!worker)worker=await Tesseract.createWorker("eng",1,{logger:m=>{if(m.status==="recognizing text")setStatus(status,"Rozpoznawanie tekstu: "+Math.round(m.progress*100)+"%");}});const result=await worker.recognize(file),recognized=result.data.text.replace(/\s+/g," ").trim(),candidates=recognized.match(/[A-Z0-9][A-Z0-9\-\/._]{3,}/gi)||[],unique=[...new Set(candidates)];if(!unique.length){setStatus(status,"Nie znaleziono numeru. Wpisz go ręcznie.");return;}const selected=prompt("Rozpoznane fragmenty. Sprawdź i popraw numer:",unique[0]);if(selected?.trim()){await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&(!singleSerialOnly(v,n)||n.serials.length===0))n.serials.push({id:crypto.randomUUID(),value:selected.trim(),createdAt:stamp()});});openVehicles.add(id);openNodes.add(id+"|"+nodeId);setStatus(status,"Dodano numer po skanowaniu.");}else setStatus(status,"Skanowanie zakończone — nic nie dodano.");}catch(err){setStatus(status,"Błąd OCR: "+err.message);}finally{input.value="";}}
+// OCR: extract only the value adjacent to the N/S label, never a year, voltage or product name.
+function extractNS(text){
+ const lines=String(text||"").replace(/\r/g,"").split(/\n/).map(x=>x.trim()).filter(Boolean);
+ const patterns=[/(?:N\s*[\/\\]\s*S|N\s*[.:]\s*S|NR\s*SERYJNY|SERIAL\s*(?:NO|NUMBER))\s*[:#=\-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,})/i];
+ for(let i=0;i<lines.length;i++){
+  for(const p of patterns){const m=lines[i].match(p);if(m){const v=m[1].replace(/[^A-Z0-9._\/-]/gi,"");if(v.length>=4)return v;}}
+  if(/^(?:N\s*[\/\\]\s*S|N\s*[.:]\s*S)\s*[:#=\-]?\s*$/i.test(lines[i])){
+   const m=(lines[i+1]||"").match(/^([A-Z0-9][A-Z0-9._\/-]{3,})/i);if(m)return m[1];
+  }
+ }
+ return null;
+}
+function cleanSerial(value){return String(value||"").trim().replace(/\s+/g,"");}
+function canScan(id,nodeId){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(!n||isDesChild(v,n))return false;if(singleSerialOnly(v,n)&&n.serials.length){alert("W tej podkategorii zapisano już numer seryjny.");return false;}return true;}
+async function confirmScan(id,nodeId,value,source){
+ if(!canScan(id,nodeId))return;
+ const edited=prompt("Numer seryjny z "+source+". Sprawdź lub popraw przed zapisaniem:",cleanSerial(value));
+ if(edited===null)return;
+ const serial=cleanSerial(edited);
+ if(!serial||!/^[A-Za-z0-9._\/-]{4,}$/.test(serial)){alert("Nieprawidłowy numer. Wpisz co najmniej 4 znaki: litery lub cyfry.");return;}
+ await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&!isDesChild(v,n)&&(!singleSerialOnly(v,n)||n.serials.length===0))n.serials.push({id:crypto.randomUUID(),value:serial,createdAt:stamp()});});
+ openVehicles.add(id);openNodes.add(id+"|"+nodeId);render();
+}
+async function runOCR(input){
+ const file=input.files?.[0];if(!file)return;
+ const id=input.dataset.id,nodeId=input.dataset.node,status="ocr-"+nodeId;
+ try{
+  if(!canScan(id,nodeId))return;
+  setStatus(status,"Rozpoznawanie pola N/S na naklejce…");
+  if(!window.Tesseract)throw Error("Nie można uruchomić OCR. Sprawdź połączenie z internetem.");
+  if(!worker)worker=await Tesseract.createWorker("eng",1,{logger:m=>{if(m.status==="recognizing text")setStatus(status,"OCR: "+Math.round(m.progress*100)+"%");}});
+  const result=await worker.recognize(file);
+  const value=extractNS(result.data.text);
+  if(!value){setStatus(status,"Nie rozpoznano pola N/S. Zrób zdjęcie bliżej, przy lepszym świetle, lub wpisz numer ręcznie.");return;}
+  await confirmScan(id,nodeId,value,"naklejki N/S");
+ }catch(err){setStatus(status,"Błąd OCR: "+err.message);}finally{input.value="";}
+}
+// QR contains only the serial number. Prefer live camera with BarcodeDetector;
+// fall back to a photo and jsQR for browsers without this API.
+let qrStream=null,qrRunning=false,qrTimer=null;
+function stopQR(){qrRunning=false;if(qrTimer)clearTimeout(qrTimer);qrTimer=null;if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}$("qr-dialog")?.remove();}
+async function startQR(id,nodeId){
+ if(!canScan(id,nodeId))return;
+ stopQR();
+ const dialog=document.createElement("div");dialog.id="qr-dialog";dialog.className="qr-overlay";
+ dialog.innerHTML='<div class="qr-panel"><div class="qr-title"><strong>Skanowanie QR</strong><button type="button" id="qr-close" class="secondary small">Zamknij</button></div><p>Umieść kod QR w ramce. Kod zawiera wyłącznie numer seryjny.</p><div class="qr-video-wrap"><video id="qr-video" autoplay muted playsinline></video><div class="qr-target"></div></div><div id="qr-message" role="status">Uruchamianie aparatu…</div><label class="secondary small file-btn qr-photo">Odczytaj QR ze zdjęcia<input type="file" id="qr-photo-input" accept="image/*" capture="environment"></label></div>';
+ document.body.appendChild(dialog);
+ $("qr-close").onclick=stopQR;
+ dialog.addEventListener("click",e=>{if(e.target===dialog)stopQR();});
+ $("qr-photo-input").onchange=async e=>{const f=e.target.files?.[0];if(!f)return;$("qr-message").textContent="Odczytywanie kodu ze zdjęcia…";try{const val=await readQRPhoto(f);if(!val)throw Error("Nie znaleziono kodu QR. Spróbuj ponownie.");stopQR();await confirmScan(id,nodeId,val,"QR");}catch(err){const msg=$("qr-message");if(msg)msg.textContent=err.message;}};
+ try{
+  if(!navigator.mediaDevices?.getUserMedia)throw Error("Aparat na żywo nie jest dostępny. Użyj zdjęcia QR.");
+  qrStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}});
+  const video=$("qr-video");if(!video){stopQR();return;}video.srcObject=qrStream;await video.play();
+  const detector=window.BarcodeDetector?new BarcodeDetector({formats:["qr_code"]}):null;
+  qrRunning=true;$("qr-message").textContent=detector?"Skieruj aparat na kod QR…":"Skanowanie na żywo niedostępne w tej przeglądarce. Użyj zdjęcia QR.";
+  if(detector){const scan=async()=>{if(!qrRunning)return;try{if(video.readyState>=2){const found=await detector.detect(video);if(found.length&&found[0].rawValue){const val=found[0].rawValue;stopQR();await confirmScan(id,nodeId,val,"QR");return;}}}catch(e){const m=$("qr-message");if(m)m.textContent="Nie można odczytać QR na żywo. Użyj zdjęcia.";}if(qrRunning)qrTimer=setTimeout(scan,220);};scan();}
+ }catch(err){if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}const msg=$("qr-message");if(msg)msg.textContent="Nie udało się uruchomić aparatu: "+err.message+" Możesz użyć zdjęcia QR.";}
+}
+async function readQRPhoto(file){
+ const bmp=await createImageBitmap(file);const canvas=document.createElement("canvas"),max=1600,scale=Math.min(1,max/Math.max(bmp.width,bmp.height));canvas.width=Math.max(1,Math.round(bmp.width*scale));canvas.height=Math.max(1,Math.round(bmp.height*scale));const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.drawImage(bmp,0,0,canvas.width,canvas.height);bmp.close?.();
+ if(window.BarcodeDetector){try{const detector=new BarcodeDetector({formats:["qr_code"]});const found=await detector.detect(canvas);if(found[0]?.rawValue)return found[0].rawValue;}catch(e){/* try jsQR */}}
+ if(!window.jsQR)throw Error("Brak biblioteki QR. Sprawdź internet lub użyj przeglądarki z obsługą QR.");
+ const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);return window.jsQR(pixels.data,pixels.width,pixels.height,{inversionAttempts:"attemptBoth"})?.data||null;
+}
 function flatten(nodes,path=[],rows=[],inDes=false){nodes.forEach(n=>{const label=[...path,n.name].join(" / ");const desChild=inDes;const answer=desChild&&["Tak","Nie"].includes(n.answer)?n.answer:null;if(answer!==null){
 // DES-40: wynik Tak/Nie jest wpisywany do kolumny "Numer seryjny".
 // Historyczne numery seryjne pozostają w lokalnej bazie, lecz nie są pokazywane w tej kolumnie.
-rows.push([label,answer,"",n.comment||"","",answer]);
-}else if(n.serials.length){n.serials.forEach(serial=>rows.push([label,serial.value,serial.createdAt?new Date(serial.createdAt).toLocaleString("pl-PL"):"",n.comment||"",serial.comment||"",n.answer??""]));
-}else rows.push([label,"","",n.comment||"","",n.answer??""]);
+rows.push([label,answer,"",n.comment||"",""]);
+}else if(n.serials.length){n.serials.forEach(serial=>rows.push([label,serial.value,serial.createdAt?new Date(serial.createdAt).toLocaleString("pl-PL"):"",n.comment||"",serial.comment||""]));
+}else rows.push([label,"","",n.comment||"",""]);
 flatten(n.children||[],[...path,n.name],rows,inDes||n.name==="DES-40");});return rows;}
-function exportExcel(items){if(!items?.length){alert("Brak danych do eksportu.");return;}if(!window.XLSX){alert("Biblioteka Excel nie została pobrana. Sprawdź połączenie z internetem.");return;}const wb=XLSX.utils.book_new();items.forEach(v=>{const rows=[["Wóz",v.reg],["Komentarz ogólny",v.comment||""],[],["Podkategoria","Numer seryjny","Data dodania","Komentarz podkategorii","Komentarz numeru seryjnego","Wykonano (DES-40)"] ,...flatten(v.categories)];const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:36},{wch:32},{wch:22},{wch:48},{wch:48},{wch:18}];let name=v.reg.replace(/[\\/?*\[\]:]/g," ").slice(0,31)||"Wóz",base=name,n=1;while(wb.SheetNames.includes(name))name=(base.slice(0,27)+"_"+(++n)).slice(0,31);XLSX.utils.book_append_sheet(wb,ws,name);});XLSX.writeFile(wb,items.length===1?"Ewidencja_"+items[0].reg+".xlsx":"Ewidencja_wszystkie_wozy.xlsx");}
+function exportExcel(items){if(!items?.length){alert("Brak danych do eksportu.");return;}if(!window.XLSX){alert("Biblioteka Excel nie została pobrana. Sprawdź połączenie z internetem.");return;}const wb=XLSX.utils.book_new();items.forEach(v=>{const rows=[["ZSSW30 - "+v.reg],["Komentarz ogólny",v.comment||""],[],["Podkategoria","Numer seryjny","Data dodania","Komentarz podkategorii","Komentarz numeru seryjnego"],...flatten(v.categories)];const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:43},{wch:27},{wch:22},{wch:45},{wch:45}];ws["!autofilter"]={ref:"A4:E"+rows.length};ws["!freeze"]={xSplit:0,ySplit:4};ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:4}}];let name=v.reg.replace(/[\\/?*\[\]:]/g," ").slice(0,31)||"Wóz",base=name,n=1;while(wb.SheetNames.includes(name))name=(base.slice(0,27)+"_"+(++n)).slice(0,31);XLSX.utils.book_append_sheet(wb,ws,name);});XLSX.writeFile(wb,items.length===1?"Ewidencja_"+items[0].reg+".xlsx":"Ewidencja_wszystkie_wozy.xlsx");}
 $("exportAll").addEventListener("click",()=>exportExcel(vehicles));
 function download(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 $("backup").addEventListener("click",()=>{const payload={app:"ZSSW30 Scaner",version:2,exportedAt:stamp(),vehicles};download("zssw30-scaner-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(payload,null,2),"application/json");setStatus("globalStatus","Kopia została przygotowana. Zapisz plik w telefonie lub prześlij go ręcznie na Google Drive.");});

@@ -230,3 +230,18 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 .des-answer-editor select{width:100%;min-height:44px;color:#183c4c;background:white}
 .des-answer-actions{display:flex;gap:8px;flex-wrap:wrap}
 .des-answer-actions button{display:inline-flex;align-items:center;gap:5px;min-height:42px}
+
+/* v26: dedicated OCR and QR controls */
+.scan-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.scan-actions .file-btn,.scan-actions button{min-width:0;min-height:48px;font-size:13px}
+.scan-qr-btn{background:#e8f5f4;border:1px solid #9cd7d0;color:#176b70}
+.qr-overlay{position:fixed;inset:0;z-index:9999;background:#091724e8;display:flex;align-items:center;justify-content:center;padding:16px}
+.qr-panel{width:min(100%,460px);background:#fff;color:#193747;border-radius:18px;padding:16px;box-shadow:0 15px 70px #0006}
+.qr-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qr-panel p{font-size:14px;line-height:1.4}
+.qr-video-wrap{position:relative;overflow:hidden;border-radius:12px;background:#132b3a;aspect-ratio:4/3}
+.qr-video-wrap video{width:100%;height:100%;object-fit:cover}
+.qr-target{position:absolute;inset:16%;border:3px solid #38d5ca;border-radius:14px;pointer-events:none}
+#qr-message{padding:10px 0;font-size:13px;min-height:34px}
+.qr-photo{background:#e8f2fc;color:#25678e}
+@media(max-width:370px){.scan-actions{grid-template-columns:1fr}}

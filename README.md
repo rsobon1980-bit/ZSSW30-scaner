@@ -102,3 +102,11 @@ W podkategoriach DES-40 w kolumnie „Numer seryjny” eksportu Excel wpisywana 
 
 ## v25
 DES-40: przycisk Zmień rozwija pole wyboru Tak/Nie z przyciskami Zapisz i Anuluj. Eksport Excel korzysta z zapisanej odpowiedzi.
+
+
+## Wersja 26
+- OCR etykiet: rozpoznawany jest tylko numer przy polu N/S; brak odczytu wymaga ponownego zdjęcia lub ręcznego wpisu.
+- QR: skanowanie kamerą na żywo przy obsłudze BarcodeDetector oraz odczyt QR ze zdjęcia (jsQR jako alternatywa).
+- Wynik obu trybów wymaga zatwierdzenia przed zapisaniem.
+- Eksport Excel: nagłówek ZSSW30 - numer wozu, bez kolumny Wykonano (DES-40), z filtrem.
+- OCR i biblioteki QR/Excel wymagają internetu przy pierwszym załadowaniu. Aparat wymaga HTTPS i zgody użytkownika.
