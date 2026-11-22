@@ -79,3 +79,6 @@ Podkategorie poziomu 2 w BZ-05 (także Własna) mają limit jednego numeru seryj
 ## Wersja v18
 - BZZ-01: wybór DIO01 lub Własna. Po wybraniu DIO01 drugie pole wyboru: stara / nowa. Nazwa zapisywana jako DIO01 - stara lub DIO01 - nowa.
 - Pozostałe funkcje bez zmian.
+
+## Wersja v19
+BZ-05: wybór Master / Slave / Własna, następnie wersja stara/nowa dla Master albo stary/nowy dla Slave. Pozostałe funkcje bez zmian.
