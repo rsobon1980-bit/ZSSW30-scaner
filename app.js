@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const APP_VERSION="38";
+const APP_VERSION="39";
 const CATS=["BZZ-01","BZ-05","KWN-01","DES-40","PSU-01.D","PSU-01.O"];
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
 let editAnswerOpen=new Set(), addChildOpen=new Set(), db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), openComments=new Set(), openSerialComments=new Set(), worker=null;
@@ -14,7 +14,19 @@ function remove(id){return new Promise((resolve,reject)=>{const t=db.transaction
 function newNode(name){return{id:crypto.randomUUID(),name,comment:"",answer:null,serials:[],children:[]};}
 function freshVehicle(reg){return{id:crypto.randomUUID(),reg:reg.trim(),comment:"",createdAt:stamp(),categories:CATS.map(newNode)};}
 function normalizeNode(n){return{id:n.id||crypto.randomUUID(),name:n.name||"Podkategoria",comment:n.comment||"",answer:n.answer??null,serials:Array.isArray(n.serials)?n.serials:[],children:Array.isArray(n.children)?n.children.map(normalizeNode):[]};}
-function normalizeVehicle(v){v.categories=(v.categories||[]).map(normalizeNode);for(const name of CATS){if(!v.categories.some(n=>n.name===name))v.categories.push(newNode(name));}return v;}
+function migrateBzzNames(v){
+ const root=(v.categories||[]).find(n=>n.name==="BZZ-01");
+ if(!root)return false;
+ let changed=false;
+ for(const child of root.children||[]){
+  const old=String(child.name||"");
+  const next=old.replace(/^DIO01\s*-\s*(stara|nowa)$/i,(_,version)=>`DIO01-1 - ${version.toLowerCase()}`)
+                .replace(/^DIO01$/i,"DIO01-1");
+  if(next!==old){child.name=next;changed=true;}
+ }
+ return changed;
+}
+function normalizeVehicle(v){v.categories=(v.categories||[]).map(normalizeNode);for(const name of CATS){if(!v.categories.some(n=>n.name===name))v.categories.push(newNode(name));}migrateBzzNames(v);return v;}
 async function refresh(){vehicles=(await all()).map(normalizeVehicle).sort((a,b)=>a.reg.localeCompare(b.reg,"pl",{numeric:true}));render();}
 function countSerials(nodes){return nodes.reduce((sum,n)=>sum+(n.serials?.length||0)+countSerials(n.children||[]),0);}
 function findNode(v,id,nodes=v.categories){for(const n of nodes){if(n.id===id)return n;const found=findNode(v,id,n.children||[]);if(found)return found;}return null;}
@@ -24,7 +36,7 @@ function commentButton(id,nodeId,comment){const nodeAttr=nodeId?` data-node="${e
 function commentPanel(v,n){const nodeId=n?.id, k=v.id+"|"+(nodeId||"vehicle");if(!openComments.has(k))return "";const action=nodeId?"node-comment":"vehicle-comment",fieldId="comment-"+(nodeId||v.id),nodeAttr=nodeId?` data-node="${esc(nodeId)}"`:"";return `<div class="comment-panel"><label class="comment-label" for="${fieldId}">Komentarz ${nodeId?"do podkategorii":"do wozu"} (opcjonalnie)</label><textarea id="${fieldId}" data-action="${action}" data-id="${esc(v.id)}"${nodeAttr} placeholder="Wpisz komentarz...">${esc(nodeId?n.comment:v.comment)}</textarea><button type="button" class="secondary small comment-done" data-action="close-comment" data-id="${esc(v.id)}"${nodeAttr}>Gotowe</button></div>`;}
 function childPicker(v,n){const key=v.id+"|"+n.id;if(!addChildOpen.has(key))return "";
 const bz=n.name==="BZ-05",bzz=n.name==="BZZ-01",kw=n.name==="KWN-01",des=n.name==="DES-40",psu=n.name==="PSU-01.D"||n.name==="PSU-01.O";
-const choices=bz?["Master","Slave","Własna"]:bzz?["DIO01","Własna"]:kw?["J1","J2","J3","J4","J5","J6","J7","PCB","Własna"]:psu?["Podkładki","Własne"]:["Wymiana dźwigni","Dokręcenie nakrętki wieńcowej 50 Nm","Ustawienie luzu serwo ręczny 30 Nm","Własna"];
+const choices=bz?["Master","Slave","Własna"]:bzz?["DIO01-1","DIO01-2","Własna"]:kw?["J1","J2","J3","J4","J5","J6","J7","PCB","Własna"]:psu?["Podkładki","Własne"]:["Wymiana dźwigni","Dokręcenie nakrętki wieńcowej 50 Nm","Ustawienie luzu serwo ręczny 30 Nm","Własna"];
 const first=choices[0],versions=bz?["stara","nowa"]:["nowa","stara"];
 return `<div class="child-picker" data-picker="${esc(key)}" data-category="${esc(n.name)}"><label for="child-choice-${esc(n.id)}">1. Wybierz podkategorię</label><select class="input child-choice" id="child-choice-${esc(n.id)}" data-action="child-choice" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${choices.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select>${!des&&!psu?`<div class="child-version-wrap"><label for="child-version-${esc(n.id)}">2. Wybierz wersję ${esc(first)}</label><select class="input child-version" id="child-version-${esc(n.id)}">${versions.map(x=>`<option value="${x}">${x}</option>`).join("")}</select></div>`:`<div class="child-answer-wrap"><label for="child-answer-${esc(n.id)}">2. Wykonano</label><select class="input child-answer" id="child-answer-${esc(n.id)}"><option value="Nie">Nie</option><option value="Tak">Tak</option></select></div>`}<input class="input child-custom" id="child-custom-${esc(n.id)}" placeholder="Wpisz nazwę podkategorii" style="display:none" maxlength="100"><div class="child-picker-actions"><button type="button" data-action="save-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${uiIcon("check")} Dodaj</button><button type="button" class="secondary" data-action="cancel-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">Anuluj</button></div></div>`;}
 function singleSerialOnly(v,n){return v.categories.some(root=>root.id===n.id||["BZ-05","BZZ-01","KWN-01","PSU-01.D","PSU-01.O"].includes(root.name)&&(root.children||[]).some(child=>child.id===n.id));}
@@ -68,7 +80,7 @@ $("vehicles").addEventListener("click",async e=>{const b=e.target.closest("[data
  if(a==="cancel-child"){addChildOpen.delete(id+"|"+nodeId);render();}
  if(a==="save-child"){const parent=vehicles.find(v=>v.id===id),root=parent?.categories.find(n=>n.id===nodeId);if(!root)return;const picker=b.closest(".child-picker"),choice=picker?.querySelector(".child-choice")?.value,custom=picker?.querySelector(".child-custom")?.value.trim(),version=picker?.querySelector(".child-version")?.value;
 const psu=root.name==="PSU-01.D"||root.name==="PSU-01.O";
-const name=(choice==="Własna"||choice==="Własne")?custom:(root.name==="DES-40"||psu)?choice:root.name==="BZZ-01"?`DIO01 - ${version}`:`${choice} - ${version}`;
+const name=(choice==="Własna"||choice==="Własne")?custom:(root.name==="DES-40"||psu)?choice:root.name==="BZZ-01"?`${choice} - ${version}`:`${choice} - ${version}`;
 if(!name){alert("Wpisz nazwę podkategorii.");return;}const child=newNode(name);if(root.name==="DES-40"||(psu&&choice==="Podkładki"))child.answer=picker?.querySelector(".child-answer")?.value||"Nie";
 await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&v.categories.some(x=>x.id===nodeId))n.children.push(child);});addChildOpen.delete(id+"|"+nodeId);openNodes.add(id+"|"+nodeId);openNodes.add(id+"|"+child.id);render();}
  if(a==="edit-answer"){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(n&&["Tak","Nie"].includes(n.answer)){const key=id+"|"+nodeId;editAnswerOpen.has(key)?editAnswerOpen.delete(key):editAnswerOpen.add(key);render();}}

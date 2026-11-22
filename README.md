@@ -1,5 +1,7 @@
-ZSSW30 Scaner v38
+ZSSW30 Scaner v39
 
-Nowe kategorie główne PSU-01.D i PSU-01.O, również w istniejących wozach. Każda pozwala dodać podkategorię Podkładki (Tak/Nie) albo Własne (nazwa, numer seryjny, skanowanie i komentarze). Eksport Excel zawiera status Tak/Nie w kolumnie Numer seryjny. Pozostałe funkcje v37 zachowane.
+BZZ-01: dotychczasowa opcja DIO01 została przemianowana na DIO01-1. Dodano DIO01-2 z identycznym wyborem wersji stara / nowa. Zachowano opcję Własna, pojedynczy numer seryjny w podkategorii, OCR/QR, komentarze, eksport Excel i kopie JSON.
 
-Przed aktualizacją wykonaj kopię zapasową JSON. Wgraj wszystkie pliki z ZIP do głównego katalogu GitHub Pages.
+Wcześniej zapisane podkategorie „DIO01 - stara” i „DIO01 - nowa” są przy wczytaniu wyświetlane jako „DIO01-1 - stara” i „DIO01-1 - nowa”; numer seryjny i komentarze pozostają bez zmian. Nowe nazwy utrwalą się przy kolejnym zapisie wozu.
+
+Przed aktualizacją wykonaj kopię zapasową JSON. Wgraj wszystkie pliki z ZIP do katalogu głównego GitHub Pages.
