@@ -85,3 +85,9 @@ BZ-05: wybór Master / Slave / Własna, następnie wersja stara/nowa dla Master 
 
 
 v20: Nagłówek podkategorii poziomu 2: nazwa, licznik, rozwijanie, komentarz, edycja i usuwanie w jednym rzędzie. Nazwa jest skracana wielokropkiem na wąskich ekranach.
+
+
+## v21 — czytelne nazwy podkategorii
+- Zmniejszone ikony i usunięte ich duże tła w nagłówkach podkategorii.
+- Nazwy podkategorii mogą zawijać się do kolejnego wiersza zamiast obcinania wielokropkiem.
+- Liczniki, rozwijanie i wszystkie funkcje bez zmian.
