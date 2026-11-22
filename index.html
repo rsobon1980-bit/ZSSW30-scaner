@@ -7,10 +7,10 @@
 <meta name="application-name" content="ZSSW30 Scaner">
 <meta name="description" content="Lokalna ewidencja numerów seryjnych urządzeń w wozach ZSSW-30">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="stylesheet" href="./style.css?v=34">
-<title>ZSSW30 Scaner v34</title>
+<title>ZSSW30 Scaner v35</title>
 <script>
 (function(){try{document.documentElement.dataset.theme=localStorage.getItem('zssw30-theme')==='light'?'light':'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();
 </script>
@@ -59,16 +59,15 @@
 
 <div id="installOverlay" class="install-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="installTitle">
  <div class="install-card">
-  <div class="install-mark"><img src="./install-logo.png" alt="Logo przesłane przez użytkownika"></div>
+  <div class="install-mark"><img src="./install-logo.png" alt="Ikona ZSSW30 Scaner"></div>
   <h2 id="installTitle">ZSSW30 Scaner</h2>
   <p class="install-subtitle">Ewidencja urządzeń i numerów seryjnych</p>
   <div class="install-vehicles">
    <figure><img src="./rosomak.jpg" alt="KTO Rosomak"><figcaption>Rosomak</figcaption></figure>
    <figure><img src="./borsuk.jpg" alt="BWP Borsuk"><figcaption>Borsuk</figcaption></figure>
   </div>
-  <p class="install-description">Dodaj aplikację do ekranu głównego telefonu, aby otwierać ją bez paska adresu.</p>
   <div id="installInstructions" class="install-instructions" hidden></div>
-  <button type="button" id="installAction" class="install-action">Zainstaluj aplikację</button>
+  <button type="button" id="installAction" class="install-action"><span aria-hidden="true" class="install-download">⇩</span><span class="install-action-label">Zainstaluj aplikację</span></button>
   <button type="button" id="installDismiss" class="install-dismiss">Nie teraz</button>
  </div>
 </div>
