@@ -1,7 +1,7 @@
 (() => {
 "use strict";
-const APP_VERSION="26";
-const CATS=["BZZ-01","BZ-05","KWN-01","DES-40"];
+const APP_VERSION="38";
+const CATS=["BZZ-01","BZ-05","KWN-01","DES-40","PSU-01.D","PSU-01.O"];
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
 let editAnswerOpen=new Set(), addChildOpen=new Set(), db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), openComments=new Set(), openSerialComments=new Set(), worker=null;
 const $=id=>document.getElementById(id);
@@ -14,7 +14,7 @@ function remove(id){return new Promise((resolve,reject)=>{const t=db.transaction
 function newNode(name){return{id:crypto.randomUUID(),name,comment:"",answer:null,serials:[],children:[]};}
 function freshVehicle(reg){return{id:crypto.randomUUID(),reg:reg.trim(),comment:"",createdAt:stamp(),categories:CATS.map(newNode)};}
 function normalizeNode(n){return{id:n.id||crypto.randomUUID(),name:n.name||"Podkategoria",comment:n.comment||"",answer:n.answer??null,serials:Array.isArray(n.serials)?n.serials:[],children:Array.isArray(n.children)?n.children.map(normalizeNode):[]};}
-function normalizeVehicle(v){v.categories=(v.categories||[]).map(normalizeNode);return v;}
+function normalizeVehicle(v){v.categories=(v.categories||[]).map(normalizeNode);for(const name of CATS){if(!v.categories.some(n=>n.name===name))v.categories.push(newNode(name));}return v;}
 async function refresh(){vehicles=(await all()).map(normalizeVehicle).sort((a,b)=>a.reg.localeCompare(b.reg,"pl",{numeric:true}));render();}
 function countSerials(nodes){return nodes.reduce((sum,n)=>sum+(n.serials?.length||0)+countSerials(n.children||[]),0);}
 function findNode(v,id,nodes=v.categories){for(const n of nodes){if(n.id===id)return n;const found=findNode(v,id,n.children||[]);if(found)return found;}return null;}
@@ -23,12 +23,12 @@ function iconBtn(icon,kind,action,attrs,label){return `<button type="button" cla
 function commentButton(id,nodeId,comment){const nodeAttr=nodeId?` data-node="${esc(nodeId)}"`:"";return `<button type="button" class="comment-icon ${comment?.trim()?"has-comment":""}" data-action="toggle-comment" data-id="${esc(id)}"${nodeAttr} aria-label="${comment?.trim()?"Otwórz zapisany komentarz":"Dodaj komentarz"}" title="${comment?.trim()?"Zapisany komentarz":"Dodaj komentarz"}">${uiIcon("comment")}</button>`;}
 function commentPanel(v,n){const nodeId=n?.id, k=v.id+"|"+(nodeId||"vehicle");if(!openComments.has(k))return "";const action=nodeId?"node-comment":"vehicle-comment",fieldId="comment-"+(nodeId||v.id),nodeAttr=nodeId?` data-node="${esc(nodeId)}"`:"";return `<div class="comment-panel"><label class="comment-label" for="${fieldId}">Komentarz ${nodeId?"do podkategorii":"do wozu"} (opcjonalnie)</label><textarea id="${fieldId}" data-action="${action}" data-id="${esc(v.id)}"${nodeAttr} placeholder="Wpisz komentarz...">${esc(nodeId?n.comment:v.comment)}</textarea><button type="button" class="secondary small comment-done" data-action="close-comment" data-id="${esc(v.id)}"${nodeAttr}>Gotowe</button></div>`;}
 function childPicker(v,n){const key=v.id+"|"+n.id;if(!addChildOpen.has(key))return "";
-const bz=n.name==="BZ-05",bzz=n.name==="BZZ-01",kw=n.name==="KWN-01",des=n.name==="DES-40";
-const choices=bz?["Master","Slave","Własna"]:bzz?["DIO01","Własna"]:kw?["J1","J2","J3","J4","J5","J6","J7","PCB","Własna"]:["Wymiana dźwigni","Dokręcenie nakrętki wieńcowej 50 Nm","Ustawienie luzu serwo ręczny 30 Nm","Własna"];
+const bz=n.name==="BZ-05",bzz=n.name==="BZZ-01",kw=n.name==="KWN-01",des=n.name==="DES-40",psu=n.name==="PSU-01.D"||n.name==="PSU-01.O";
+const choices=bz?["Master","Slave","Własna"]:bzz?["DIO01","Własna"]:kw?["J1","J2","J3","J4","J5","J6","J7","PCB","Własna"]:psu?["Podkładki","Własne"]:["Wymiana dźwigni","Dokręcenie nakrętki wieńcowej 50 Nm","Ustawienie luzu serwo ręczny 30 Nm","Własna"];
 const first=choices[0],versions=bz?["stara","nowa"]:["nowa","stara"];
-return `<div class="child-picker" data-picker="${esc(key)}" data-category="${esc(n.name)}"><label for="child-choice-${esc(n.id)}">1. Wybierz podkategorię</label><select class="input child-choice" id="child-choice-${esc(n.id)}" data-action="child-choice" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${choices.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select>${!des?`<div class="child-version-wrap"><label for="child-version-${esc(n.id)}">2. Wybierz wersję ${esc(first)}</label><select class="input child-version" id="child-version-${esc(n.id)}">${versions.map(x=>`<option value="${x}">${x}</option>`).join("")}</select></div>`:`<div class="child-answer-wrap"><label for="child-answer-${esc(n.id)}">2. Wykonano</label><select class="input child-answer" id="child-answer-${esc(n.id)}"><option value="Nie">Nie</option><option value="Tak">Tak</option></select></div>`}<input class="input child-custom" id="child-custom-${esc(n.id)}" placeholder="Wpisz nazwę podkategorii" style="display:none" maxlength="100"><div class="child-picker-actions"><button type="button" data-action="save-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${uiIcon("check")} Dodaj</button><button type="button" class="secondary" data-action="cancel-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">Anuluj</button></div></div>`;}
-function singleSerialOnly(v,n){return v.categories.some(root=>root.id===n.id||["BZ-05","BZZ-01","KWN-01"].includes(root.name)&&(root.children||[]).some(child=>child.id===n.id));}
-function isDesChild(v,n){return v.categories.some(root=>root.name==="DES-40"&&(root.children||[]).some(child=>child.id===n.id));}
+return `<div class="child-picker" data-picker="${esc(key)}" data-category="${esc(n.name)}"><label for="child-choice-${esc(n.id)}">1. Wybierz podkategorię</label><select class="input child-choice" id="child-choice-${esc(n.id)}" data-action="child-choice" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${choices.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select>${!des&&!psu?`<div class="child-version-wrap"><label for="child-version-${esc(n.id)}">2. Wybierz wersję ${esc(first)}</label><select class="input child-version" id="child-version-${esc(n.id)}">${versions.map(x=>`<option value="${x}">${x}</option>`).join("")}</select></div>`:`<div class="child-answer-wrap"><label for="child-answer-${esc(n.id)}">2. Wykonano</label><select class="input child-answer" id="child-answer-${esc(n.id)}"><option value="Nie">Nie</option><option value="Tak">Tak</option></select></div>`}<input class="input child-custom" id="child-custom-${esc(n.id)}" placeholder="Wpisz nazwę podkategorii" style="display:none" maxlength="100"><div class="child-picker-actions"><button type="button" data-action="save-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${uiIcon("check")} Dodaj</button><button type="button" class="secondary" data-action="cancel-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">Anuluj</button></div></div>`;}
+function singleSerialOnly(v,n){return v.categories.some(root=>root.id===n.id||["BZ-05","BZZ-01","KWN-01","PSU-01.D","PSU-01.O"].includes(root.name)&&(root.children||[]).some(child=>child.id===n.id));}
+function isDesChild(v,n){return v.categories.some(root=>(root.name==="DES-40"||root.name==="PSU-01.D"||root.name==="PSU-01.O")&&(root.children||[]).some(child=>child.id===n.id)&&n.answer!==null);}
 function renderNode(v,n,depth=0){const key=v.id+"|"+n.id,opened=openNodes.has(key),count=countSerials(n.children||[])+n.serials.length;
 const desChild=depth>=1&&isDesChild(v,n);
 const toggle=`<button type="button" class="cat-head ${depth===0?"root-category-head":"child-category-head"}" data-action="toggle-node" data-id="${v.id}" data-node="${n.id}" aria-expanded="${opened}">${depth===0?'<span class="level-mark">GŁÓWNA</span>':""}<span class="cat-name" title="${esc(n.name)}">${esc(n.name)}</span>${desChild?"":`<span class="cat-count">${count}</span>`}<span class="chev icon-chevron ${opened?"is-open":""}">${uiIcon("chevron")}</span></button>`;
@@ -67,8 +67,9 @@ $("vehicles").addEventListener("click",async e=>{const b=e.target.closest("[data
  if(a==="add-child"){const parent=vehicles.find(v=>v.id===id);if(!parent?.categories.some(root=>root.id===nodeId))return;const key=id+"|"+nodeId;addChildOpen.has(key)?addChildOpen.delete(key):addChildOpen.add(key);openNodes.add(key);render();}
  if(a==="cancel-child"){addChildOpen.delete(id+"|"+nodeId);render();}
  if(a==="save-child"){const parent=vehicles.find(v=>v.id===id),root=parent?.categories.find(n=>n.id===nodeId);if(!root)return;const picker=b.closest(".child-picker"),choice=picker?.querySelector(".child-choice")?.value,custom=picker?.querySelector(".child-custom")?.value.trim(),version=picker?.querySelector(".child-version")?.value;
-const name=choice==="Własna"?custom:root.name==="DES-40"?choice:root.name==="BZZ-01"?`DIO01 - ${version}`:`${choice} - ${version}`;
-if(!name){alert("Wpisz nazwę podkategorii.");return;}const child=newNode(name);if(root.name==="DES-40")child.answer=picker?.querySelector(".child-answer")?.value||"Nie";
+const psu=root.name==="PSU-01.D"||root.name==="PSU-01.O";
+const name=(choice==="Własna"||choice==="Własne")?custom:(root.name==="DES-40"||psu)?choice:root.name==="BZZ-01"?`DIO01 - ${version}`:`${choice} - ${version}`;
+if(!name){alert("Wpisz nazwę podkategorii.");return;}const child=newNode(name);if(root.name==="DES-40"||(psu&&choice==="Podkładki"))child.answer=picker?.querySelector(".child-answer")?.value||"Nie";
 await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&v.categories.some(x=>x.id===nodeId))n.children.push(child);});addChildOpen.delete(id+"|"+nodeId);openNodes.add(id+"|"+nodeId);openNodes.add(id+"|"+child.id);render();}
  if(a==="edit-answer"){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(n&&["Tak","Nie"].includes(n.answer)){const key=id+"|"+nodeId;editAnswerOpen.has(key)?editAnswerOpen.delete(key):editAnswerOpen.add(key);render();}}
  if(a==="cancel-answer"){editAnswerOpen.delete(id+"|"+nodeId);render();}
@@ -83,8 +84,9 @@ await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&v.categories.some(x=
  if(a==="export-one")exportExcel([vehicles.find(x=>x.id===id)]);
 });
 $("vehicles").addEventListener("change",async e=>{if(e.target.dataset.action==="child-choice"){const picker=e.target.closest(".child-picker"),choice=e.target.value,custom=picker?.querySelector(".child-custom"),version=picker?.querySelector(".child-version-wrap"),category=picker?.dataset.category;
-if(custom){custom.style.display=choice==="Własna"?"block":"none";if(choice==="Własna")custom.focus();}
-if(version){version.style.display=choice==="Własna"?"none":"block";const label=version.querySelector("label"),select=version.querySelector("select");if(label)label.textContent="2. Wybierz wersję "+choice;if(select){const values=category==="BZ-05"?(choice==="Slave"?["stary","nowy"]:["stara","nowa"]):["nowa","stara"];select.innerHTML=values.map(x=>`<option value="${x}">${x}</option>`).join("");}}
+if(custom){custom.style.display=(choice==="Własna"||choice==="Własne")?"block":"none";if(choice==="Własna"||choice==="Własne")custom.focus();}
+const answerWrap=picker?.querySelector(".child-answer-wrap");if(answerWrap&&category?.startsWith("PSU-01."))answerWrap.style.display=choice==="Podkładki"?"block":"none";
+if(version){version.style.display=(choice==="Własna"||choice==="Własne")?"none":"block";const label=version.querySelector("label"),select=version.querySelector("select");if(label)label.textContent="2. Wybierz wersję "+choice;if(select){const values=category==="BZ-05"?(choice==="Slave"?["stary","nowy"]:["stara","nowa"]):["nowa","stara"];select.innerHTML=values.map(x=>`<option value="${x}">${x}</option>`).join("");}}
 return;}const el=e.target;if(el.dataset.action==="vehicle-comment")await updateVehicle(el.dataset.id,v=>v.comment=el.value);if(el.dataset.action==="node-comment")await updateVehicle(el.dataset.id,v=>{const n=findNode(v,el.dataset.node);if(n)n.comment=el.value;});if(el.dataset.action==="ocr")await runOCR(el);});
 $("vehicles").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches('input[id^="serial-"]')){e.preventDefault();const nodeId=e.target.id.slice(7);$("vehicles").querySelector(`[data-action="add-serial"][data-node="${nodeId}"]`)?.click();}});
 // OCR: extract only the value adjacent to the N/S label, never a year, voltage or product name.
@@ -152,7 +154,7 @@ async function readQRPhoto(file){
  if(!window.jsQR)throw Error("Brak biblioteki QR. Sprawdź internet lub użyj przeglądarki z obsługą QR.");
  const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);return window.jsQR(pixels.data,pixels.width,pixels.height,{inversionAttempts:"attemptBoth"})?.data||null;
 }
-function flatten(nodes,path=[],rows=[],inDes=false){nodes.forEach(n=>{const label=[...path,n.name].join(" / ");const desChild=inDes;const answer=desChild&&["Tak","Nie"].includes(n.answer)?n.answer:null;if(answer!==null){
+function flatten(nodes,path=[],rows=[],inDes=false){nodes.forEach(n=>{const label=[...path,n.name].join(" / ");const desChild=inDes||n.answer!==null;const answer=desChild&&["Tak","Nie"].includes(n.answer)?n.answer:null;if(answer!==null){
 // DES-40: wynik Tak/Nie jest wpisywany do kolumny "Numer seryjny".
 // Historyczne numery seryjne pozostają w lokalnej bazie, lecz nie są pokazywane w tej kolumnie.
 rows.push([label,answer,"",n.comment||"",""]);

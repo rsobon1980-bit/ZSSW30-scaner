@@ -1,4 +1,4 @@
-const CACHE_NAME = "zssw30-scaner-shell-v37";
+const CACHE_NAME = "zssw30-scaner-shell-v38";
 const APP_FILES = ["./index.html", "./style.css?v=37", "./app.js?v=37", "./manifest.webmanifest?v=36", "./apple-touch-icon-v36.png", "./rosomak.jpg", "./borsuk.jpg", "./wb-logo.png", "./install-logo.png", "./install.js?v=34", "./icon-v36-192.png", "./icon-v36-512.png", "./icon-v36-maskable.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)));
