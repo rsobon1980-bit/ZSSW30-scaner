@@ -1,5 +1,5 @@
-ZSSW30 Scaner v35
+ZSSW30 Scaner v36
 
-Nowy ekran instalacyjny zgodny z zaakceptowanym podglądem: ciemny motyw, niebieska ikona skanera (wariant 2), oryginalne zdjęcia Rosomaka i Borsuka, przycisk instalacji, Nie teraz. Bez dodatkowego logo pod zdjęciami. Nowe ikony PWA dla Android i iPhone. Pozostała funkcjonalność z v34.
+Nowa ikona aplikacji (wariant 2: niebieski znak z ramką skanera) dla Androida i iPhone’a oraz systemowego okna instalacji. Nowe nazwy plików ikon, manifest z ikoną maskable i nowa wersja cache service workera ograniczają ryzyko wyświetlania starej ikony. Ekran instalacyjny i funkcje v35 pozostają bez zmian.
 
-Przed aktualizacją wykonaj kopię zapasową JSON. Wgraj pliki z ZIP do głównego katalogu repozytorium GitHub Pages. Po aktualizacji może być konieczne ponowne dodanie aplikacji do ekranu głównego, aby ikona została odświeżona.
+Przed reinstalacją wykonaj kopię zapasową JSON. Wgraj całą zawartość ZIP do głównego katalogu repozytorium. Jeżeli Android zachowuje starą ikonę, usuń starą instalację po wykonaniu kopii i zainstaluj ponownie.
