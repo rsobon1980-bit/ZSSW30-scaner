@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const APP_VERSION="39";
+const APP_VERSION="40";
 const CATS=["BZZ-01","BZ-05","KWN-01","DES-40","PSU-01.D","PSU-01.O"];
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
 let editAnswerOpen=new Set(), addChildOpen=new Set(), db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), openComments=new Set(), openSerialComments=new Set(), worker=null;
@@ -11,9 +11,9 @@ function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open
 function all(){return new Promise((resolve,reject)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});}
 function put(v){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).put(v);t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 function remove(id){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).delete(id);t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
-function newNode(name){return{id:crypto.randomUUID(),name,comment:"",answer:null,serials:[],children:[]};}
+function newNode(name){return{id:crypto.randomUUID(),name,comment:"",answer:null,createdAt:stamp(),serials:[],children:[]};}
 function freshVehicle(reg){return{id:crypto.randomUUID(),reg:reg.trim(),comment:"",createdAt:stamp(),categories:CATS.map(newNode)};}
-function normalizeNode(n){return{id:n.id||crypto.randomUUID(),name:n.name||"Podkategoria",comment:n.comment||"",answer:n.answer??null,serials:Array.isArray(n.serials)?n.serials:[],children:Array.isArray(n.children)?n.children.map(normalizeNode):[]};}
+function normalizeNode(n){return{id:n.id||crypto.randomUUID(),name:n.name||"Podkategoria",comment:n.comment||"",answer:n.answer??null,createdAt:n.createdAt||null,serials:Array.isArray(n.serials)?n.serials:[],children:Array.isArray(n.children)?n.children.map(normalizeNode):[]};}
 function migrateBzzNames(v){
  const root=(v.categories||[]).find(n=>n.name==="BZZ-01");
  if(!root)return false;
@@ -169,9 +169,9 @@ async function readQRPhoto(file){
 function flatten(nodes,path=[],rows=[],inDes=false){nodes.forEach(n=>{const label=[...path,n.name].join(" / ");const desChild=inDes||n.answer!==null;const answer=desChild&&["Tak","Nie"].includes(n.answer)?n.answer:null;if(answer!==null){
 // DES-40: wynik Tak/Nie jest wpisywany do kolumny "Numer seryjny".
 // Historyczne numery seryjne pozostają w lokalnej bazie, lecz nie są pokazywane w tej kolumnie.
-rows.push([label,answer,"",n.comment||"",""]);
+rows.push([label,answer,n.createdAt?new Date(n.createdAt).toLocaleString("pl-PL"):"",n.comment||"",""]);
 }else if(n.serials.length){n.serials.forEach(serial=>rows.push([label,serial.value,serial.createdAt?new Date(serial.createdAt).toLocaleString("pl-PL"):"",n.comment||"",serial.comment||""]));
-}else rows.push([label,"","",n.comment||"",""]);
+}else rows.push([label,"",n.createdAt?new Date(n.createdAt).toLocaleString("pl-PL"):"",n.comment||"",""]);
 flatten(n.children||[],[...path,n.name],rows,inDes||n.name==="DES-40");});return rows;}
 async function exportExcel(items){
  if(!items?.length){alert("Brak danych do eksportu.");return;}
