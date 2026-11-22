@@ -221,3 +221,5 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 .category.nested-category>.category-toolbar.child-toolbar>.comment-icon,
 .category.nested-category>.category-toolbar.child-toolbar>.icon-action{flex-basis:25px;width:25px}
 }
+
+.des-answer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 12px 8px;font-size:13px;color:#cbd5e1}.answer-yes{color:#60d6a0}.answer-no{color:#f1a5a5}.des-answer button{margin-left:auto}
