@@ -159,7 +159,57 @@ rows.push([label,answer,"",n.comment||"",""]);
 }else if(n.serials.length){n.serials.forEach(serial=>rows.push([label,serial.value,serial.createdAt?new Date(serial.createdAt).toLocaleString("pl-PL"):"",n.comment||"",serial.comment||""]));
 }else rows.push([label,"","",n.comment||"",""]);
 flatten(n.children||[],[...path,n.name],rows,inDes||n.name==="DES-40");});return rows;}
-function exportExcel(items){if(!items?.length){alert("Brak danych do eksportu.");return;}if(!window.XLSX){alert("Biblioteka Excel nie została pobrana. Sprawdź połączenie z internetem.");return;}const wb=XLSX.utils.book_new();items.forEach(v=>{const rows=[["ZSSW30 - "+v.reg],["Komentarz ogólny",v.comment||""],[],["Podkategoria","Numer seryjny","Data dodania","Komentarz podkategorii","Komentarz numeru seryjnego"],...flatten(v.categories)];const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:43},{wch:27},{wch:22},{wch:45},{wch:45}];ws["!autofilter"]={ref:"A4:E"+rows.length};ws["!freeze"]={xSplit:0,ySplit:4};ws["!merges"]=[{s:{r:0,c:0},e:{r:0,c:4}}];let name=v.reg.replace(/[\\/?*\[\]:]/g," ").slice(0,31)||"Wóz",base=name,n=1;while(wb.SheetNames.includes(name))name=(base.slice(0,27)+"_"+(++n)).slice(0,31);XLSX.utils.book_append_sheet(wb,ws,name);});XLSX.writeFile(wb,items.length===1?"Ewidencja_"+items[0].reg+".xlsx":"Ewidencja_wszystkie_wozy.xlsx");}
+async function exportExcel(items){
+ if(!items?.length){alert("Brak danych do eksportu.");return;}
+ if(!window.ExcelJS){alert("Biblioteka Excel nie została pobrana. Sprawdź połączenie z internetem.");return;}
+ try{
+ const wb=new ExcelJS.Workbook();wb.creator="ZSSW30 Scaner";
+ items.forEach(v=>{
+  let name=v.reg.replace(/[\\/?*\[\]:]/g," ").slice(0,31)||"Wóz",base=name,n=1;
+  while(wb.getWorksheet(name))name=(base.slice(0,27)+"_"+(++n)).slice(0,31);
+  const ws=wb.addWorksheet(name,{views:[{state:"frozen",ySplit:4}]});
+  ws.mergeCells("A1:E1");ws.getCell("A1").value="ZSSW30 - "+v.reg;
+  ws.getCell("A1").font={bold:true,size:17,color:{argb:"FFFFFFFF"}};
+  ws.getCell("A1").fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF145B77"}};
+  ws.getCell("A1").alignment={vertical:"middle"};ws.getRow(1).height=33;
+  ws.getCell("A2").value="Komentarz ogólny";ws.getCell("B2").value=v.comment||"";
+  ws.getCell("A2").font={bold:true};ws.getCell("B2").alignment={wrapText:true,vertical:"top"};
+  const headers=["Podkategoria","Numer seryjny","Komentarz numeru seryjnego","Komentarz podkategorii","Data dodania"];
+  ws.getRow(4).values=headers;ws.getRow(4).height=28;
+  ws.getRow(4).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF176580"}};c.alignment={vertical:"middle",wrapText:true};});
+  const data=flatten(v.categories);
+  data.forEach((r,i)=>{
+   // flatten: podkategoria, numer seryjny, data, komentarz podkategorii, komentarz numeru
+   const vals=[r[0],r[1],r[4],r[3],r[2]];
+   const row=ws.addRow(vals);const excelRow=i+5;
+   row.eachCell({includeEmpty:true},(c,col)=>{
+    c.alignment={vertical:"top",wrapText:true,horizontal:col===2?"center":"left"};
+    if(i%2===1)c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFEAF3F7"}};
+    c.border={bottom:{style:"hair",color:{argb:"FFD4E4EB"}}};
+   });
+   // Preserve serials as text, including leading zeroes.
+   row.getCell(2).numFmt="@";
+   const lengths=vals.map((x,j)=>String(x??"").split("\n").reduce((m,t)=>Math.max(m,t.length),0));
+   const widths=[43,25,42,42,22];
+   const lines=Math.max(1,...lengths.map((len,j)=>Math.ceil(Math.max(1,len)/(widths[j]-3))));
+   row.height=Math.min(180,Math.max(23,lines*16+7));
+  });
+  ws.columns=[{width:43},{width:25},{width:42},{width:42},{width:22}];
+  // Make narrow text columns fit short values while bounding long comments.
+  [1,2,3,4,5].forEach((col)=>{
+   const cap=[48,30,48,48,25][col-1],min=[24,17,26,26,17][col-1];
+   const lengths=data.map(r=>String([r[0],r[1],r[4],r[3],r[2]][col-1]??"").split("\n").reduce((m,t)=>Math.max(m,t.length),0));
+   ws.getColumn(col).width=Math.min(cap,Math.max(min,Math.max(headers[col-1].length,...lengths,0)+3));
+  });
+  ws.autoFilter={from:{row:4,column:1},to:{row:Math.max(4,data.length+4),column:5}};
+  ws.getColumn(2).alignment={horizontal:"center",vertical:"top",wrapText:true};
+  // Worksheet column formatting must not override header styling.
+  ws.getCell("B4").alignment={vertical:"middle",wrapText:true,horizontal:"center"};
+ });
+ const bytes=await wb.xlsx.writeBuffer();
+ download(items.length===1?"Ewidencja_"+items[0].reg+".xlsx":"Ewidencja_wszystkie_wozy.xlsx",bytes,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+ }catch(e){console.error(e);alert("Nie udało się przygotować pliku Excel: "+e.message);}
+}
 $("exportAll").addEventListener("click",()=>exportExcel(vehicles));
 function download(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 $("backup").addEventListener("click",()=>{const payload={app:"ZSSW30 Scaner",version:2,exportedAt:stamp(),vehicles};download("zssw30-scaner-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(payload,null,2),"application/json");setStatus("globalStatus","Kopia została przygotowana. Zapisz plik w telefonie lub prześlij go ręcznie na Google Drive.");});

@@ -134,3 +134,8 @@ W górnej części aplikacji dodano wybór Jasny / Dark Mode. Ustawienie jest pr
 ## v31 — licznik kategorii
 - W licznikach kategorii i podkategorii usunięto skrót „nr”; pozostała sama liczba.
 - Nie zmieniono sposobu obliczania liczników ani danych użytkownika.
+
+## Zmiany v32
+- Eksport Excel: trzecia kolumna to „Komentarz numeru seryjnego”, data dodania jest ostatnia.
+- Numer seryjny wyśrodkowany, tekst zawijany, szerokości kolumn ograniczone i dostosowane do zawartości.
+- Eksport używa ExcelJS pobieranego z CDN; do pierwszego eksportu wymagany jest internet.
