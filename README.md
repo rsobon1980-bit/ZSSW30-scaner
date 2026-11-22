@@ -82,3 +82,6 @@ Podkategorie poziomu 2 w BZ-05 (także Własna) mają limit jednego numeru seryj
 
 ## Wersja v19
 BZ-05: wybór Master / Slave / Własna, następnie wersja stara/nowa dla Master albo stary/nowy dla Slave. Pozostałe funkcje bez zmian.
+
+
+v20: Nagłówek podkategorii poziomu 2: nazwa, licznik, rozwijanie, komentarz, edycja i usuwanie w jednym rzędzie. Nazwa jest skracana wielokropkiem na wąskich ekranach.
