@@ -70,3 +70,12 @@ Podkategorie od poziomu 2 mają przyciski edycji nazwy i usuwania. Usunięcie po
 
 ## Wersja v16
 Podkategorie poziomu 2 w BZ-05 (także Własna) mają limit jednego numeru seryjnego. Po zapisaniu numeru formularz dodawania i skanowania znika; po usunięciu wraca. Pozostałe podkategorie bez zmian.
+
+## Wersja v17
+- BZZ-01: lista podkategorii DIO01 - nowa, DIO01 - stara, Własna (ręczna nazwa).
+- W każdej podkategorii BZZ-01 maksymalnie jeden numer seryjny; po usunięciu można dodać następny.
+- BZ-05 zachowuje dotychczasową listę i limit jednego numeru.
+
+## Wersja v18
+- BZZ-01: wybór DIO01 lub Własna. Po wybraniu DIO01 drugie pole wyboru: stara / nowa. Nazwa zapisywana jako DIO01 - stara lub DIO01 - nowa.
+- Pozostałe funkcje bez zmian.
