@@ -91,3 +91,7 @@ v20: Nagłówek podkategorii poziomu 2: nazwa, licznik, rozwijanie, komentarz, e
 - Zmniejszone ikony i usunięte ich duże tła w nagłówkach podkategorii.
 - Nazwy podkategorii mogą zawijać się do kolejnego wiersza zamiast obcinania wielokropkiem.
 - Liczniki, rozwijanie i wszystkie funkcje bez zmian.
+
+
+## v23
+W podkategoriach DES-40 ukryto pola numerów seryjnych, skanowanie, listy numerów i liczniki. Pozostają Tak/Nie, komentarze, edycja i usuwanie. Historyczne numery pozostają w bazie i eksporcie. Kategoria główna DES-40 bez zmian.
