@@ -130,3 +130,7 @@ W górnej części aplikacji dodano wybór Jasny / Dark Mode. Ustawienie jest pr
 - Zamiast statycznego „01” w nagłówku „Dodaj nowy wóz” wyświetla się ikona pojazdu i rzeczywista liczba wozów.
 - Licznik aktualizuje się po dodaniu, usunięciu i przywróceniu kopii zapasowej.
 - Obsługuje motywy Jasny i Ciemny. Dane użytkownika pozostają w IndexedDB.
+
+## v31 — licznik kategorii
+- W licznikach kategorii i podkategorii usunięto skrót „nr”; pozostała sama liczba.
+- Nie zmieniono sposobu obliczania liczników ani danych użytkownika.
