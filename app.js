@@ -167,7 +167,7 @@ async function exportExcel(items){
  items.forEach(v=>{
   let name=v.reg.replace(/[\\/?*\[\]:]/g," ").slice(0,31)||"Wóz",base=name,n=1;
   while(wb.getWorksheet(name))name=(base.slice(0,27)+"_"+(++n)).slice(0,31);
-  const ws=wb.addWorksheet(name,{views:[{state:"frozen",ySplit:4}]});
+  const ws=wb.addWorksheet(name);
   ws.mergeCells("A1:E1");ws.getCell("A1").value="ZSSW30 - "+v.reg;
   ws.getCell("A1").font={bold:true,size:17,color:{argb:"FFFFFFFF"}};
   ws.getCell("A1").fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF145B77"}};
