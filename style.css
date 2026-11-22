@@ -223,3 +223,10 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 }
 
 .des-answer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 12px 8px;font-size:13px;color:#cbd5e1}.answer-yes{color:#60d6a0}.answer-no{color:#f1a5a5}.des-answer button{margin-left:auto}
+
+/* v25: edycja odpowiedzi DES-40 przez listę Tak/Nie */
+.des-answer-editor{margin:0 12px 12px;padding:12px;border:1px solid #bdd5de;border-radius:12px;background:#edf4f7;display:grid;gap:10px;color:#254653}
+.des-answer-editor label{font-size:14px;font-weight:600}
+.des-answer-editor select{width:100%;min-height:44px;color:#183c4c;background:white}
+.des-answer-actions{display:flex;gap:8px;flex-wrap:wrap}
+.des-answer-actions button{display:inline-flex;align-items:center;gap:5px;min-height:42px}

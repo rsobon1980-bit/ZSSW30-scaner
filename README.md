@@ -95,3 +95,10 @@ v20: Nagłówek podkategorii poziomu 2: nazwa, licznik, rozwijanie, komentarz, e
 
 ## v23
 W podkategoriach DES-40 ukryto pola numerów seryjnych, skanowanie, listy numerów i liczniki. Pozostają Tak/Nie, komentarze, edycja i usuwanie. Historyczne numery pozostają w bazie i eksporcie. Kategoria główna DES-40 bez zmian.
+
+## v24 — Excel DES-40
+W podkategoriach DES-40 w kolumnie „Numer seryjny” eksportu Excel wpisywana jest odpowiedź Tak lub Nie. Główna kategoria DES-40 i pozostałe kategorie bez zmian. Historyczne numery pozostają w lokalnej bazie, lecz nie są eksportowane jako numery seryjne podkategorii DES-40.
+
+
+## v25
+DES-40: przycisk Zmień rozwija pole wyboru Tak/Nie z przyciskami Zapisz i Anuluj. Eksport Excel korzysta z zapisanej odpowiedzi.
