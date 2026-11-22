@@ -284,3 +284,15 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 :root[data-theme="dark"] .theme-option[aria-pressed="true"]{background:#17526a;color:#e4faff;border-color:#4abbd9}
 :root[data-theme="dark"] .serial-comment-editor textarea{background:#102435;color:#f0f8fc}
 :root[data-theme="dark"] footer{color:#9eb4c3}
+
+/* v28: compact theme menu next to local-mode indicator */
+.header-controls{margin-left:auto;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.header-controls .tag{margin-left:0}
+.theme-menu-wrap{position:relative}
+.theme-toggle{display:grid;place-items:center;width:37px;height:37px;padding:0;border:1px solid #7d9baa;background:#21465e;color:#fff;border-radius:11px;font-size:24px;line-height:1}
+.theme-toggle:focus-visible,.theme-option:focus-visible{outline:3px solid #67d3ec;outline-offset:2px}
+.theme-menu{position:absolute;z-index:100;top:calc(100% + 8px);right:0;width:178px;padding:9px;background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:0 12px 28px #0005;color:var(--ink)}
+.theme-menu[hidden]{display:none!important}
+.theme-menu-title{font-size:12px;font-weight:700;padding:5px 7px 8px;color:var(--muted)}
+.theme-menu .theme-option{display:block;width:100%;min-height:42px;margin:2px 0;text-align:left;padding:9px 12px;border-radius:9px}
+@media(max-width:420px){.top-brand{gap:7px}.top h1{font-size:18px}.top p{font-size:11px}.header-controls{gap:4px}.header-controls .tag{font-size:9px;padding:5px 6px}.theme-toggle{width:34px;height:34px}}

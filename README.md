@@ -114,3 +114,8 @@ DES-40: przycisk Zmień rozwija pole wyboru Tak/Nie z przyciskami Zapisz i Anulu
 
 ## v27 — Motyw jasny i ciemny
 W górnej części aplikacji dodano wybór Jasny / Dark Mode. Ustawienie jest przechowywane lokalnie w localStorage i nie zmienia danych pojazdów.
+
+
+## v28 — wygląd
+- Wybór motywu w ikonie obok TRYB LOKALNY; Jasny / Ciemny.
+- Ciemny domyślnie dla nowych instalacji; zapamiętany wybór użytkownika jest zachowany.
