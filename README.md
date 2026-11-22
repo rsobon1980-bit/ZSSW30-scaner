@@ -143,3 +143,7 @@ W górnej części aplikacji dodano wybór Jasny / Dark Mode. Ustawienie jest pr
 
 ## v33 — Excel
 Usunięto zamrożenie czterech pierwszych wierszy w arkuszach eksportu Excel. Tytuł, komentarz i nagłówki przewijają się razem z danymi; filtry, formatowanie i zawijanie tekstu pozostają bez zmian.
+
+
+## v34 — instalacja PWA
+Przy pierwszym uruchomieniu pojawia się ekran instalacji ze zdjęciami Rosomaka i Borsuka oraz nowym logo przesłanym przez użytkownika. Android: systemowy monit instalacji, jeśli dostępny, w przeciwnym razie instrukcja. iPhone: instrukcja dodania do ekranu początkowego. „Nie teraz” zapamiętuje wybór; ponowne otwarcie przez przycisk „Instalacja” w nagłówku. Dane IndexedDB pozostają lokalne; przed zmianą kontekstu aplikacji należy wykonać kopię JSON.

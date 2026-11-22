@@ -319,3 +319,16 @@ footer{text-align:center;color:#82929c;font-size:11px;padding:16px}
 /* v30: licznik wszystkich wozów w nagłówku dodawania */
 .vehicle-count-badge{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0;min-width:48px;padding:5px 10px;border-radius:9px;background:color-mix(in srgb,var(--blue) 15%,var(--card));color:var(--ink);font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;border:1px solid var(--line)}
 .vehicle-count-badge svg{color:var(--blue);flex-shrink:0}
+
+/* v34 – instalacja PWA */
+.install-overlay[hidden],.install-instructions[hidden]{display:none!important}
+.install-overlay{position:fixed;inset:0;z-index:9999;background:rgba(3,11,20,.84);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.install-card{width:min(100%,440px);max-height:calc(100dvh - 32px);overflow-y:auto;background:#142a3b;color:#f4f9fc;border:1px solid #3b5a6c;border-radius:22px;padding:22px 18px;text-align:center;box-shadow:0 20px 60px #0008}
+.install-mark{display:flex;align-items:center;justify-content:center;width:74px;height:74px;margin:0 auto 9px;border-radius:19px;background:#e4eff6}
+.install-mark img{width:57px;height:57px;object-fit:contain}
+.install-card h2{margin:0;font-size:24px}.install-subtitle{color:#b8d0de;margin:3px 0 15px;font-size:13px}
+.install-vehicles{display:grid;grid-template-columns:1fr 1fr;gap:10px}.install-vehicles figure{margin:0;min-width:0}.install-vehicles img{width:100%;height:108px;object-fit:cover;border-radius:11px;display:block}.install-vehicles figcaption{font-size:12px;color:#cce0e9;margin-top:5px}
+.install-description{font-size:14px;color:#dcebf3;line-height:1.5;margin:16px 0}.install-instructions{background:#254459;border-radius:12px;padding:12px;text-align:left;font-size:13px;line-height:1.5;margin-bottom:12px}
+.install-action,.install-dismiss{width:100%;display:block;margin-top:9px}.install-action{background:#187b9c;color:#fff}.install-dismiss{background:transparent;color:#c7dce8;border:1px solid #4c6879}
+.install-open-button{border:1px solid #52768b;background:#234b60;color:#fff;font-size:12px;padding:8px 10px;margin-left:6px}
+@media(max-height:600px){.install-card{padding:12px}.install-vehicles img{height:76px}.install-mark{width:50px;height:50px}.install-mark img{width:42px;height:42px}}
