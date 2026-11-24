@@ -1,3 +1,3 @@
-ZSSW30 Scaner v40
+ZSSW30 Scaner v41
 
-Eksport Excel: kolumna Data dodania dla wpisów Tak/Nie (DES-40 i Podkładki PSU), numerów seryjnych oraz podkategorii. Data jest zapisywana przy tworzeniu nowej podkategorii i zachowywana przy zmianie Tak/Nie. Historyczne wpisy bez zapisanej daty mają pustą komórkę. Pozostałe funkcje v39 zachowane.
+OCR: aparat i galeria, dodatkowe próby kontrastu i negatywu, warianty N/S, propozycja 8 cyfr, potwierdzenie. Edycja numeru wozu z kontrolą duplikatów. Baza i eksport z v40. OCR lokalny w przeglądarce; biblioteka i model mogą wymagać internetu.

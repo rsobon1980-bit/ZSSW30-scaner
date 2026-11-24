@@ -1,6 +1,6 @@
 (() => {
 "use strict";
-const APP_VERSION="40";
+const APP_VERSION="41";
 const CATS=["BZZ-01","BZ-05","KWN-01","DES-40","PSU-01.D","PSU-01.O"];
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
 let editAnswerOpen=new Set(), addChildOpen=new Set(), db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), openComments=new Set(), openSerialComments=new Set(), worker=null;
@@ -51,7 +51,7 @@ ${opened?`<div class="cat-body">
 
 ${desChild?"":`${singleSerialOnly(v,n)&&n.serials.length?"":`<div class="muted">Dodaj numer seryjny ręcznie lub zeskanuj tekst aparatem.</div>
 <div class="serial-form"><input class="input" id="serial-${n.id}" placeholder="Numer seryjny" autocomplete="off">${iconBtn("plus","add","add-serial",`data-id="${v.id}" data-node="${n.id}"`,"Dodaj numer seryjny")}</div>
-<div class="scan-actions"><label class="secondary small file-btn icon-scan" title="Zrób zdjęcie naklejki N/S">${uiIcon("camera")}<span>Naklejka N/S (OCR)</span><input type="file" accept="image/*" capture="environment" data-action="ocr" data-id="${v.id}" data-node="${n.id}"></label><button type="button" class="secondary small scan-qr-btn" data-action="qr-camera" data-id="${v.id}" data-node="${n.id}">▦ Skanuj QR</button></div>
+<div class="scan-actions"><label class="secondary small file-btn icon-scan" title="Zrób zdjęcie naklejki N/S">${uiIcon("camera")}<span>OCR – aparat</span><input type="file" accept="image/*" capture="environment" data-action="ocr" data-id="${v.id}" data-node="${n.id}"></label><label class="secondary small file-btn icon-scan" title="Wybierz zdjęcie naklejki z galerii">${uiIcon("camera")}<span>OCR – galeria</span><input type="file" accept="image/*" data-action="ocr" data-id="${v.id}" data-node="${n.id}"></label><button type="button" class="secondary small scan-qr-btn" data-action="qr-camera" data-id="${v.id}" data-node="${n.id}">▦ Skanuj QR</button></div>
 <div class="status" id="ocr-${n.id}" role="status"></div>`}
 <div class="serial-list">${n.serials.length?n.serials.map(s=>{const serialKey=v.id+"|"+n.id+"|"+s.id,commentOpen=openSerialComments.has(serialKey),showInline=true;return `<div class="serial-row serial-card"><div class="serial-main"><span class="serial-value">${esc(s.value)}</span><div class="serial-actions">${showInline?`<button class="serial-comment-icon ${s.comment?.trim()?"has-comment":""}" type="button" data-action="toggle-serial-comment" data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}" title="${s.comment?.trim()?"Edytuj komentarz":"Dodaj komentarz"}" aria-label="Komentarz do numeru seryjnego">${uiIcon("comment")}</button>`:""}${iconBtn("pencil","edit","edit-serial",`data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}"`,"Edytuj numer seryjny")}${iconBtn("trash","delete","delete-serial",`data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}"`,"Usuń numer seryjny")}</div></div>${showInline&&s.comment?.trim()?`<div class="serial-comment-display"><span class="serial-comment-label">Komentarz</span><div>${esc(s.comment)}</div></div>`:""}${showInline&&commentOpen?`<div class="serial-comment-editor"><label for="serial-comment-${s.id}">Komentarz do numeru seryjnego (opcjonalnie)</label><textarea id="serial-comment-${s.id}" placeholder="Wpisz komentarz...">${esc(s.comment||"")}</textarea><button type="button" class="secondary small" data-action="save-serial-comment" data-id="${v.id}" data-node="${n.id}" data-sid="${s.id}">Gotowe</button></div>`:""}</div>`;}).join(""):'<div class="muted">Brak zapisanych numerów.</div>'}</div>`}
 ${depth===0?`<div class="child-add"><button class="secondary small" data-action="add-child" data-id="${v.id}" data-node="${n.id}">${uiIcon("plus")}<span>Dodaj podkategorię</span></button>${childPicker(v,n)}</div>`:""}
@@ -62,7 +62,7 @@ function render(){
  $("addVehicleCount").textContent=String(vehicles.length);
  $("vehicleCount").textContent=vehicles.length+ (vehicles.length===1?" wóz":(vehicles.length%10>=2&&vehicles.length%10<=4&&!(vehicles.length%100>=12&&vehicles.length%100<=14)?" wozy":" wozów"));
  if(!vehicles.length){$("vehicles").innerHTML='<div class="empty"><div class="big">▣</div>Nie dodano jeszcze żadnego wozu.</div>';return;}
- $("vehicles").innerHTML=vehicles.map(v=>{const opened=openVehicles.has(v.id);return `<article class="vehicle"><button class="vehicle-head vehicle-toggle" data-action="toggle-vehicle" data-id="${v.id}"><div class="vehicle-title"><h3>${esc(v.reg)}</h3></div><span class="chev icon-chevron ${opened?"is-open":""}">${uiIcon("chevron")}</span></button>${commentButton(v.id,null,v.comment)}${opened?`<div class="vehicle-details"><div class="vehicle-actions"><button class="small ghost" data-action="export-one" data-id="${v.id}">Excel tego wozu</button><button class="small danger" data-action="delete-vehicle" data-id="${v.id}">Usuń wóz</button></div>
+ $("vehicles").innerHTML=vehicles.map(v=>{const opened=openVehicles.has(v.id);return `<article class="vehicle"><button class="vehicle-head vehicle-toggle" data-action="toggle-vehicle" data-id="${v.id}"><div class="vehicle-title"><h3>${esc(v.reg)}</h3></div><span class="chev icon-chevron ${opened?"is-open":""}">${uiIcon("chevron")}</span></button>${commentButton(v.id,null,v.comment)}${iconBtn("pencil","edit","rename-vehicle",`data-id="${v.id}"`,"Edytuj numer wozu")}${opened?`<div class="vehicle-details"><div class="vehicle-actions"><button class="small ghost" data-action="export-one" data-id="${v.id}">Excel tego wozu</button><button class="small danger" data-action="delete-vehicle" data-id="${v.id}">Usuń wóz</button></div>
 ${commentPanel(v,null)}
 <div class="category-list">${v.categories.map(n=>renderNode(v,n)).join("")}</div></div>`:""}</article>`;}).join("");
 }
@@ -74,6 +74,7 @@ $("vehicles").addEventListener("click",async e=>{const b=e.target.closest("[data
  if(a==="close-comment"){const el=b.parentElement?.querySelector("textarea");if(el){await updateVehicle(id,v=>{if(nodeId){const n=findNode(v,nodeId);if(n)n.comment=el.value;}else v.comment=el.value;});}openComments.delete(id+"|"+(nodeId||"vehicle"));render();}
  if(a==="toggle-vehicle"){openVehicles.has(id)?openVehicles.delete(id):openVehicles.add(id);render();}
  if(a==="toggle-node"){const k=id+"|"+nodeId;openNodes.has(k)?openNodes.delete(k):openNodes.add(k);render();}
+ if(a==="rename-vehicle"){const v=vehicles.find(x=>x.id===id);if(!v)return;const raw=prompt("Edytuj numer rejestracyjny wozu:",v.reg);if(raw===null)return;const reg=raw.trim();if(!reg){alert("Wpisz numer rejestracyjny.");return;}if(vehicles.some(x=>x.id!==id&&x.reg.trim().toLowerCase()===reg.toLowerCase())){alert("Taki numer rejestracyjny jest już na liście.");return;}if(reg!==v.reg)await updateVehicle(id,x=>x.reg=reg);}
  if(a==="rename-node"){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(n){const name=prompt("Nowa nazwa podkategorii:",n.name);if(name!==null&&name.trim()&&name.trim()!==n.name){await updateVehicle(id,v=>{const target=findNode(v,nodeId);if(target)target.name=name.trim();});}}}
  if(a==="delete-node"){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(n&&confirm(`Usunąć podkategorię „${n.name}” wraz ze wszystkimi jej numerami seryjnymi, komentarzami i podkategoriami podrzędnymi? Tej operacji nie można cofnąć.`)){await updateVehicle(id,v=>{const drop=(nodes)=>{const i=nodes.findIndex(x=>x.id===nodeId);if(i!==-1){nodes.splice(i,1);return true;}return nodes.some(x=>drop(x.children||[]));};drop(v.categories);});for(const key of [...openNodes])if(key.startsWith(id+"|"))openNodes.delete(key);for(const key of [...openComments])if(key.startsWith(id+"|"))openComments.delete(key);for(const key of [...openSerialComments])if(key.startsWith(id+"|"))openSerialComments.delete(key);render();}}
  if(a==="add-child"){const parent=vehicles.find(v=>v.id===id);if(!parent?.categories.some(root=>root.id===nodeId))return;const key=id+"|"+nodeId;addChildOpen.has(key)?addChildOpen.delete(key):addChildOpen.add(key);openNodes.add(key);render();}
@@ -103,16 +104,14 @@ return;}const el=e.target;if(el.dataset.action==="vehicle-comment")await updateV
 $("vehicles").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches('input[id^="serial-"]')){e.preventDefault();const nodeId=e.target.id.slice(7);$("vehicles").querySelector(`[data-action="add-serial"][data-node="${nodeId}"]`)?.click();}});
 // OCR: extract only the value adjacent to the N/S label, never a year, voltage or product name.
 function extractNS(text){
- const lines=String(text||"").replace(/\r/g,"").split(/\n/).map(x=>x.trim()).filter(Boolean);
- const patterns=[/(?:N\s*[\/\\]\s*S|N\s*[.:]\s*S|NR\s*SERYJNY|SERIAL\s*(?:NO|NUMBER))\s*[:#=\-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,})/i];
- for(let i=0;i<lines.length;i++){
-  for(const p of patterns){const m=lines[i].match(p);if(m){const v=m[1].replace(/[^A-Z0-9._\/-]/gi,"");if(v.length>=4)return v;}}
-  if(/^(?:N\s*[\/\\]\s*S|N\s*[.:]\s*S)\s*[:#=\-]?\s*$/i.test(lines[i])){
-   const m=(lines[i+1]||"").match(/^([A-Z0-9][A-Z0-9._\/-]{3,})/i);if(m)return m[1];
-  }
- }
+ const lines=String(text||"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const marker=/(?:^|[^A-Z0-9])(?:N\s*[\/\\.:]?\s*[S5]|S\s*\/\s*N|NR\s*SERYJNY|SERIAL\s*(?:NO|NUMBER))(?=\s|[:#=|.-]|\d|$)/i;
+ function candidate(t){const m=t.replace(/^[\s:;#=|.\-]+/,"").match(/^([A-Z0-9][A-Z0-9._\/-]{3,})/i);return m&&/\d/.test(m[1])&&!/^(?:19|20)\d{2}$/.test(m[1])?m[1]:null;}
+ for(let i=0;i<lines.length;i++){const m=marker.exec(lines[i]);if(m){const rest=lines[i].slice(m.index+m[0].length);const v=candidate(rest)||(!rest.replace(/[\s:;#=|.\-]/g,"")?candidate(lines[i+1]||""):null);if(v)return v;}}
  return null;
 }
+function fallbackNS(text){const matches=[...new Set(String(text).match(/\b\d{8}\b/g)||[])];return matches.length===1?matches[0]:null;}
+async function ocrCanvas(file){const img=await createImageBitmap(file);try{const c=document.createElement("canvas"),scale=Math.min(2,2400/Math.max(img.width,img.height));c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);const data=ctx.getImageData(0,0,c.width,c.height),d=data.data,gray=new Uint8Array(c.width*c.height);for(let i=0;i<gray.length;i++)gray[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];for(let i=0;i<gray.length;i++){let v=gray[i];if(i>=c.width&&i<gray.length-c.width&&i%c.width>0&&i%c.width<c.width-1)v=2*v-.25*(gray[i-1]+gray[i+1]+gray[i-c.width]+gray[i+c.width]);v=Math.max(0,Math.min(255,(v-128)*1.5+128));d[i*4]=d[i*4+1]=d[i*4+2]=v;}ctx.putImageData(data,0,0);return c;}finally{img.close();}}
 function cleanSerial(value){return String(value||"").trim().replace(/\s+/g,"");}
 function canScan(id,nodeId){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(!n||isDesChild(v,n))return false;if(singleSerialOnly(v,n)&&n.serials.length){alert("W tej podkategorii zapisano już numer seryjny.");return false;}return true;}
 async function confirmScan(id,nodeId,value,source){
@@ -124,19 +123,25 @@ async function confirmScan(id,nodeId,value,source){
  await updateVehicle(id,v=>{const n=findNode(v,nodeId);if(n&&!isDesChild(v,n)&&(!singleSerialOnly(v,n)||n.serials.length===0))n.serials.push({id:crypto.randomUUID(),value:serial,createdAt:stamp()});});
  openVehicles.add(id);openNodes.add(id+"|"+nodeId);render();
 }
+let ocrBusy=false,ocrStatus="";
 async function runOCR(input){
  const file=input.files?.[0];if(!file)return;
  const id=input.dataset.id,nodeId=input.dataset.node,status="ocr-"+nodeId;
+ if(ocrBusy){input.value="";alert("Poczekaj na zakończenie odczytu OCR.");return;}
+ ocrBusy=true;ocrStatus=status;
  try{
   if(!canScan(id,nodeId))return;
-  setStatus(status,"Rozpoznawanie pola N/S na naklejce…");
+  setStatus(status,"Rozpoznawanie pola N/S…");
   if(!window.Tesseract)throw Error("Nie można uruchomić OCR. Sprawdź połączenie z internetem.");
-  if(!worker)worker=await Tesseract.createWorker("eng",1,{logger:m=>{if(m.status==="recognizing text")setStatus(status,"OCR: "+Math.round(m.progress*100)+"%");}});
-  const result=await worker.recognize(file);
-  const value=extractNS(result.data.text);
-  if(!value){setStatus(status,"Nie rozpoznano pola N/S. Zrób zdjęcie bliżej, przy lepszym świetle, lub wpisz numer ręcznie.");return;}
+  if(!worker)worker=await Tesseract.createWorker("eng",1,{logger:m=>{if(m.status==="recognizing text")setStatus(ocrStatus,"OCR: "+Math.round(m.progress*100)+"%");}});
+  const texts=[];let value=null;
+  async function read(image){const result=await worker.recognize(image);texts.push(result.data.text);return extractNS(result.data.text);}
+  value=await read(file);
+  if(!value){try{const c=await ocrCanvas(file);value=await read(c);if(!value){const ctx=c.getContext("2d"),d=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4)for(let j=0;j<3;j++)d.data[i+j]=255-d.data[i+j];ctx.putImageData(d,0,0);value=await read(c);}}catch(e){console.warn("Przetwarzanie obrazu",e);}}
+  const full=texts.join("\n---\n");
+  if(!value){value=fallbackNS(full);if(value){await confirmScan(id,nodeId,value,"OCR (propozycja bez pewnego oznaczenia N/S)");return;}setStatus(status,"Nie rozpoznano N/S. Odczytany tekst: "+full);return;}
   await confirmScan(id,nodeId,value,"naklejki N/S");
- }catch(err){setStatus(status,"Błąd OCR: "+err.message);}finally{input.value="";}
+ }catch(err){setStatus(status,"Błąd OCR: "+err.message);}finally{input.value="";ocrBusy=false;}
 }
 // QR contains only the serial number. Prefer live camera with BarcodeDetector;
 // fall back to a photo and jsQR for browsers without this API.
