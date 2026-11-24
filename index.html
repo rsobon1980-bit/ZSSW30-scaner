@@ -9,8 +9,8 @@
 <link rel="manifest" href="./manifest.webmanifest?v=36">
 <link rel="icon" href="./icon-v36-192.png" type="image/png">
 <link rel="apple-touch-icon" href="./apple-touch-icon-v36.png">
-<link rel="stylesheet" href="./style.css?v=38">
-<title>ZSSW30 Scaner v41</title>
+<link rel="stylesheet" href="./style.css?v=42">
+<title>ZSSW30 Scaner v42</title>
 <script>
 (function(){try{document.documentElement.dataset.theme=localStorage.getItem('zssw30-theme')==='light'?'light':'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();
 </script>
@@ -21,7 +21,7 @@
     <div class="top-brand">
       <img class="wb-mark" src="./wb-logo.png" alt="Znak graficzny WB">
       <div><h1>ZSSW30 Scaner</h1><p>Ewidencja urządzeń i numerów seryjnych</p></div>
-      <div class="header-controls"><span class="tag">TRYB LOKALNY</span><div class="theme-menu-wrap"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Wybierz wygląd aplikacji" aria-expanded="false" aria-controls="themeMenu" title="Wygląd aplikacji">◐</button><div id="themeMenu" class="theme-menu" hidden><div class="theme-menu-title">Wygląd aplikacji</div><button type="button" id="themeLight" class="theme-option" aria-pressed="false">☀️ Jasny</button><button type="button" id="themeDark" class="theme-option" aria-pressed="true">🌙 Ciemny</button></div></div></div>
+      <div class="header-controls"><span class="tag">TRYB LOKALNY</span><div class="theme-menu-wrap"><button type="button" id="themeToggle" class="theme-toggle" aria-label="Wybierz wygląd aplikacji" aria-expanded="false" aria-controls="themeMenu" title="Wygląd aplikacji">⚙</button><div id="themeMenu" class="theme-menu" hidden><div class="theme-menu-title">Wygląd aplikacji</div><button type="button" id="themeLight" class="theme-option" aria-pressed="false">☀️ Jasny</button><button type="button" id="themeDark" class="theme-option" aria-pressed="true">🌙 Ciemny</button></div></div></div>
     </div>
     <div class="hero-photos">
       <figure><img src="./rosomak.jpg" alt="KTO Rosomak z wieżą ZSSW-30"><figcaption>KTO Rosomak</figcaption></figure>
@@ -83,30 +83,12 @@
   <button type="button" id="installDismiss" class="install-dismiss">Nie teraz</button>
  </div>
 </div>
+<div id="settingsOverlay" class="restore-overlay" hidden role="dialog" aria-modal="true" aria-label="Ustawienia"><div class="restore-card settings-card"><div class="section-head"><h2>⚙ Ustawienia</h2><button id="settingsClose" class="secondary">Zamknij</button></div><h3>Wygląd aplikacji</h3><label>Motyw<select id="settingsTheme" class="input"><option value="dark">Ciemny</option><option value="light">Jasny</option></select></label><label>Wielkość tekstu<select id="settingsSize" class="input"><option value="small">Mała</option><option value="normal">Normalna</option><option value="large">Duża</option></select></label><label><input type="checkbox" id="settingsPhotos"> Zdjęcia pojazdów</label><button id="settingsReset" class="secondary">Przywróć wygląd domyślny</button><h3>Kategorie główne</h3><ul id="settingsRoots"></ul><label>Zakres dodawania<select id="settingsScope" class="input"><option value="all">Wszystkie wozy</option><option value="new">Tylko nowe wozy</option></select></label><input id="settingsRootName" class="input" maxlength="100" placeholder="Nazwa nowej kategorii"><button id="settingsAddRoot">Dodaj kategorię</button><h3>Podkategorie</h3><select id="settingsParent" class="input"></select><ul id="settingsSubs"></ul><input id="settingsSubName" class="input" maxlength="100" placeholder="Nazwa podkategorii"><select id="settingsType" class="input"><option value="serial">Numer seryjny / OCR / komentarz</option><option value="answer">Tak / Nie / komentarz</option></select><button id="settingsAddSub">Dodaj podkategorię</button><p class="muted">Kopie JSON i Excel pozostają na ekranie głównym. ZSSW30 Scaner v42.</p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="./app.js?v=41"></script>
-<script>
-(function(){
-  const buttons={light:document.getElementById('themeLight'),dark:document.getElementById('themeDark')};
-  const toggle=document.getElementById('themeToggle'), menu=document.getElementById('themeMenu');
-  function closeMenu(){menu.hidden=true;toggle.setAttribute('aria-expanded','false');}
-  function setTheme(theme){
-    document.documentElement.dataset.theme=theme;
-    for(const [key,button] of Object.entries(buttons))button.setAttribute('aria-pressed',String(key===theme));
-    const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==='dark'?'#0d1724':'#102a43';
-    try{localStorage.setItem('zssw30-theme',theme);}catch(e){}
-    closeMenu();
-  }
-  toggle.addEventListener('click',()=>{const open=menu.hidden;menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));});
-  buttons.light.addEventListener('click',()=>setTheme('light'));
-  buttons.dark.addEventListener('click',()=>setTheme('dark'));
-  document.addEventListener('click',event=>{if(!event.target.closest('.theme-menu-wrap'))closeMenu();});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
-  setTheme(document.documentElement.dataset.theme==='light'?'light':'dark');
-})();
-</script>
+<script src="./app.js?v=42"></script>
+
 <script src="./install.js?v=34"></script>
 </body>
 </html>

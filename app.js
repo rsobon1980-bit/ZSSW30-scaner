@@ -1,7 +1,13 @@
 (() => {
 "use strict";
-const APP_VERSION="41";
+const APP_VERSION="42";
 const CATS=["BZZ-01","BZ-05","KWN-01","DES-40","PSU-01.D","PSU-01.O"];
+const SETTINGS_KEY="zssw30-settings-v42";
+function cleanSettings(x){return {roots:Array.isArray(x?.roots)?x.roots.filter(r=>r&&typeof r.name==="string"&&r.name.trim()).map(r=>({name:r.name.trim(),all:!!r.all})):[],subs:Array.isArray(x?.subs)?x.subs.filter(r=>r&&typeof r.root==="string"&&typeof r.name==="string"&&r.name.trim()).map(r=>({root:r.root,name:r.name.trim(),all:!!r.all,answer:!!r.answer})):[],theme:x?.theme==="light"?"light":"dark",size:["small","normal","large"].includes(x?.size)?x.size:"normal",photos:x?.photos!==false};}
+let settings=cleanSettings({theme:localStorage.getItem("zssw30-theme")});try{const raw=localStorage.getItem(SETTINGS_KEY);if(raw)settings=cleanSettings(JSON.parse(raw));}catch(e){}
+function saveSettings(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));localStorage.setItem("zssw30-theme",settings.theme);applyAppearance();}
+function applyAppearance(){document.documentElement.dataset.theme=settings.theme;document.documentElement.dataset.textSize=settings.size;document.documentElement.dataset.hidePhotos=String(!settings.photos);}
+function applyTemplates(v,fresh=false){for(const r of settings.roots){if((fresh||r.all)&&!v.categories.some(n=>n.name===r.name))v.categories.push(newNode(r.name));}for(const r of settings.subs){if(!fresh&&!r.all)continue;const root=v.categories.find(n=>n.name===r.root);if(root&&!root.children.some(n=>n.name===r.name)){const n=newNode(r.name);if(r.answer)n.answer="Nie";root.children.push(n);}}return v;}
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
 let editAnswerOpen=new Set(), addChildOpen=new Set(), db=null, vehicles=[], openVehicles=new Set(), openNodes=new Set(), openComments=new Set(), openSerialComments=new Set(), worker=null;
 const $=id=>document.getElementById(id);
@@ -12,7 +18,7 @@ function all(){return new Promise((resolve,reject)=>{const r=db.transaction(STOR
 function put(v){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).put(v);t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 function remove(id){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).delete(id);t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 function newNode(name){return{id:crypto.randomUUID(),name,comment:"",answer:null,createdAt:stamp(),serials:[],children:[]};}
-function freshVehicle(reg){return{id:crypto.randomUUID(),reg:reg.trim(),comment:"",createdAt:stamp(),categories:CATS.map(newNode)};}
+function freshVehicle(reg){return applyTemplates({id:crypto.randomUUID(),reg:reg.trim(),comment:"",createdAt:stamp(),categories:CATS.map(newNode)},true);}
 function normalizeNode(n){return{id:n.id||crypto.randomUUID(),name:n.name||"Podkategoria",comment:n.comment||"",answer:n.answer??null,createdAt:n.createdAt||null,serials:Array.isArray(n.serials)?n.serials:[],children:Array.isArray(n.children)?n.children.map(normalizeNode):[]};}
 function migrateBzzNames(v){
  const root=(v.categories||[]).find(n=>n.name==="BZZ-01");
@@ -36,11 +42,11 @@ function commentButton(id,nodeId,comment){const nodeAttr=nodeId?` data-node="${e
 function commentPanel(v,n){const nodeId=n?.id, k=v.id+"|"+(nodeId||"vehicle");if(!openComments.has(k))return "";const action=nodeId?"node-comment":"vehicle-comment",fieldId="comment-"+(nodeId||v.id),nodeAttr=nodeId?` data-node="${esc(nodeId)}"`:"";return `<div class="comment-panel"><label class="comment-label" for="${fieldId}">Komentarz ${nodeId?"do podkategorii":"do wozu"} (opcjonalnie)</label><textarea id="${fieldId}" data-action="${action}" data-id="${esc(v.id)}"${nodeAttr} placeholder="Wpisz komentarz...">${esc(nodeId?n.comment:v.comment)}</textarea><button type="button" class="secondary small comment-done" data-action="close-comment" data-id="${esc(v.id)}"${nodeAttr}>Gotowe</button></div>`;}
 function childPicker(v,n){const key=v.id+"|"+n.id;if(!addChildOpen.has(key))return "";
 const bz=n.name==="BZ-05",bzz=n.name==="BZZ-01",kw=n.name==="KWN-01",des=n.name==="DES-40",psu=n.name==="PSU-01.D"||n.name==="PSU-01.O";
-const choices=bz?["Master","Slave","Własna"]:bzz?["DIO01-1","DIO01-2","Własna"]:kw?["J1","J2","J3","J4","J5","J6","J7","PCB","Własna"]:psu?["Podkładki","Własne"]:["Wymiana dźwigni","Dokręcenie nakrętki wieńcowej 50 Nm","Ustawienie luzu serwo ręczny 30 Nm","Własna"];
+const choices=!CATS.includes(n.name)?["Własna"]:bz?["Master","Slave","Własna"]:bzz?["DIO01-1","DIO01-2","Własna"]:kw?["J1","J2","J3","J4","J5","J6","J7","PCB","Własna"]:psu?["Podkładki","Własne"]:["Wymiana dźwigni","Dokręcenie nakrętki wieńcowej 50 Nm","Ustawienie luzu serwo ręczny 30 Nm","Własna"];
 const first=choices[0],versions=bz?["stara","nowa"]:["nowa","stara"];
-return `<div class="child-picker" data-picker="${esc(key)}" data-category="${esc(n.name)}"><label for="child-choice-${esc(n.id)}">1. Wybierz podkategorię</label><select class="input child-choice" id="child-choice-${esc(n.id)}" data-action="child-choice" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${choices.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select>${!des&&!psu?`<div class="child-version-wrap"><label for="child-version-${esc(n.id)}">2. Wybierz wersję ${esc(first)}</label><select class="input child-version" id="child-version-${esc(n.id)}">${versions.map(x=>`<option value="${x}">${x}</option>`).join("")}</select></div>`:`<div class="child-answer-wrap"><label for="child-answer-${esc(n.id)}">2. Wykonano</label><select class="input child-answer" id="child-answer-${esc(n.id)}"><option value="Nie">Nie</option><option value="Tak">Tak</option></select></div>`}<input class="input child-custom" id="child-custom-${esc(n.id)}" placeholder="Wpisz nazwę podkategorii" style="display:none" maxlength="100"><div class="child-picker-actions"><button type="button" data-action="save-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${uiIcon("check")} Dodaj</button><button type="button" class="secondary" data-action="cancel-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">Anuluj</button></div></div>`;}
+return `<div class="child-picker" data-picker="${esc(key)}" data-category="${esc(n.name)}"><label for="child-choice-${esc(n.id)}">1. Wybierz podkategorię</label><select class="input child-choice" id="child-choice-${esc(n.id)}" data-action="child-choice" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${choices.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select>${!CATS.includes(n.name)?"":!des&&!psu?`<div class="child-version-wrap"><label for="child-version-${esc(n.id)}">2. Wybierz wersję ${esc(first)}</label><select class="input child-version" id="child-version-${esc(n.id)}">${versions.map(x=>`<option value="${x}">${x}</option>`).join("")}</select></div>`:`<div class="child-answer-wrap"><label for="child-answer-${esc(n.id)}">2. Wykonano</label><select class="input child-answer" id="child-answer-${esc(n.id)}"><option value="Nie">Nie</option><option value="Tak">Tak</option></select></div>`}<input class="input child-custom" id="child-custom-${esc(n.id)}" placeholder="Wpisz nazwę podkategorii" style="display:${!CATS.includes(n.name)?"block":"none"}" maxlength="100"><div class="child-picker-actions"><button type="button" data-action="save-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">${uiIcon("check")} Dodaj</button><button type="button" class="secondary" data-action="cancel-child" data-id="${esc(v.id)}" data-node="${esc(n.id)}">Anuluj</button></div></div>`;}
 function singleSerialOnly(v,n){return v.categories.some(root=>root.id===n.id||["BZ-05","BZZ-01","KWN-01","PSU-01.D","PSU-01.O"].includes(root.name)&&(root.children||[]).some(child=>child.id===n.id));}
-function isDesChild(v,n){return v.categories.some(root=>(root.name==="DES-40"||root.name==="PSU-01.D"||root.name==="PSU-01.O")&&(root.children||[]).some(child=>child.id===n.id)&&n.answer!==null);}
+function isDesChild(v,n){return n.answer!==null;}
 function renderNode(v,n,depth=0){const key=v.id+"|"+n.id,opened=openNodes.has(key),count=countSerials(n.children||[])+n.serials.length;
 const desChild=depth>=1&&isDesChild(v,n);
 const toggle=`<button type="button" class="cat-head ${depth===0?"root-category-head":"child-category-head"}" data-action="toggle-node" data-id="${v.id}" data-node="${n.id}" aria-expanded="${opened}">${depth===0?'<span class="level-mark">GŁÓWNA</span>':""}<span class="cat-name" title="${esc(n.name)}">${esc(n.name)}</span>${desChild?"":`<span class="cat-count">${count}</span>`}<span class="chev icon-chevron ${opened?"is-open":""}">${uiIcon("chevron")}</span></button>`;
@@ -231,8 +237,8 @@ async function exportExcel(items){
 }
 $("exportAll").addEventListener("click",()=>exportExcel(vehicles));
 function download(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
-$("backup").addEventListener("click",()=>{const payload={app:"ZSSW30 Scaner",version:2,exportedAt:stamp(),vehicles};download("zssw30-scaner-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(payload,null,2),"application/json");setStatus("globalStatus","Kopia została przygotowana. Zapisz plik w telefonie lub prześlij go ręcznie na Google Drive.");});
-let pendingRestore=null;
+$("backup").addEventListener("click",()=>{const payload={app:"ZSSW30 Scaner",version:3,exportedAt:stamp(),settings,vehicles};download("zssw30-scaner-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(payload,null,2),"application/json");setStatus("globalStatus","Kopia została przygotowana. Zapisz plik w telefonie lub prześlij go ręcznie na Google Drive.");});
+let pendingRestore=null,pendingSettings=null;
 const restoreOverlay=$("restoreOverlay"),restoreWarning=$("restoreWarning");
 function closeRestore(){restoreOverlay.hidden=true;pendingRestore=null;$("restoreFile").value="";}
 function restoreMode(){return document.querySelector('input[name="restoreMode"]:checked')?.value||"merge";}
@@ -247,7 +253,7 @@ $("restoreFile").addEventListener("change",async e=>{
   if(!data||!Array.isArray(data.vehicles))throw Error("Plik nie zawiera poprawnej ewidencji wozów.");
   const valid=data.vehicles.every(v=>v&&typeof v.reg==="string"&&v.reg.trim()&&Array.isArray(v.categories));
   if(!valid)throw Error("Niektóre wozy w kopii mają nieprawidłowe dane. Nie wprowadzono żadnych zmian.");
-  pendingRestore=data.vehicles;
+  pendingRestore=data.vehicles;pendingSettings=data.settings?cleanSettings(data.settings):null;
   document.querySelector('input[name="restoreMode"][value="merge"]').checked=true;
   restoreWarning.hidden=true;
   $("restoreFileInfo").textContent=`Plik: ${file.name} • Wozów w kopii: ${pendingRestore.length} • Obecnie: ${vehicles.length}`;
@@ -278,10 +284,18 @@ $("restoreConfirm").addEventListener("click",async()=>{
    toAdd.forEach(v=>store.put(v));
    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error("Błąd zapisu"));tx.onabort=()=>reject(tx.error||Error("Przerwano zapis"));
   });
-  closeRestore();await refresh();
+  if(pendingSettings){if(mode==="replace")settings=pendingSettings;else{for(const r of pendingSettings.roots)if(!settings.roots.some(x=>x.name===r.name))settings.roots.push(r);for(const r of pendingSettings.subs)if(!settings.subs.some(x=>x.root===r.root&&x.name===r.name))settings.subs.push(r);}saveSettings();}closeRestore();await refresh();
   setStatus("globalStatus",mode==="replace"?`Zastąpiono ewidencję. Przywrócono ${toAdd.length} wozów; pominięto ${skipped} duplikatów w pliku.`:`Dodano ${toAdd.length} wozów; pominięto ${skipped} powtarzających się numerów rejestracyjnych. Istniejące wozy zachowano.`);
  }catch(err){alert("Nie udało się przywrócić kopii: "+err.message);}finally{btn.disabled=false;}
 });
 $("helpDrive").addEventListener("click",()=>alert("Aby zachować kopię na Google Drive:\n1. Wybierz „Kopia zapasowa”.\n2. Zapisz pobrany plik w telefonie.\n3. Otwórz aplikację Google Drive i prześlij ten plik.\n\nNa nowym telefonie pobierz plik z Drive i wybierz „Przywróć kopię”."));
+
+function settingsRender(){const roots=[...new Set([...CATS,...settings.roots.map(r=>r.name)])];$("settingsRoots").innerHTML=roots.map(r=>`<li>${esc(r)}</li>`).join("");$("settingsParent").innerHTML=roots.map(r=>`<option>${esc(r)}</option>`).join("");$("settingsSubs").innerHTML=settings.subs.map(r=>`<li>${esc(r.root)} / ${esc(r.name)} (${r.answer?"Tak/Nie":"N/S"})</li>`).join("");$("settingsTheme").value=settings.theme;$("settingsSize").value=settings.size;$("settingsPhotos").checked=settings.photos;}
+$("themeToggle").onclick=()=>{settingsRender();$("settingsOverlay").hidden=false;};$("settingsClose").onclick=()=>{$("settingsOverlay").hidden=true;};
+for(const id of ["settingsTheme","settingsSize","settingsPhotos"])$(id).onchange=()=>{settings.theme=$("settingsTheme").value;settings.size=$("settingsSize").value;settings.photos=$("settingsPhotos").checked;saveSettings();};
+async function addTemplate(kind){const field=$(kind==="root"?"settingsRootName":"settingsSubName"),name=field.value.trim(),root=$("settingsParent").value,all=$("settingsScope").value==="all";if(!name)return;const duplicate=kind==="root"?[...CATS,...settings.roots.map(r=>r.name)].some(x=>x.toLowerCase()===name.toLowerCase()):settings.subs.some(x=>x.root===root&&x.name.toLowerCase()===name.toLowerCase());if(duplicate){alert("Taka nazwa już istnieje.");return;}const r=kind==="root"?{name,all}:{root,name,all,answer:$("settingsType").value==="answer"};try{if(all){const items=await windowlessAll();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite"),store=tx.objectStore(STORE);for(const v of items){if(kind==="root"){if(!v.categories.some(n=>n.name===name))v.categories.push(newNode(name));}else{let n=v.categories.find(n=>n.name===root);if(!n){n=newNode(root);v.categories.push(n);}if(!n.children.some(c=>c.name===name)){const child=newNode(name);if(r.answer)child.answer="Nie";n.children.push(child);}}store.put(v);}tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}settings[kind==="root"?"roots":"subs"].push(r);saveSettings();field.value="";settingsRender();await refresh();}catch(e){alert("Błąd zapisu: "+e.message);}}
+const windowlessAll=()=>all();
+$("settingsAddRoot").onclick=()=>addTemplate("root");$("settingsAddSub").onclick=()=>addTemplate("sub");$("settingsReset").onclick=()=>{settings.theme="dark";settings.size="normal";settings.photos=true;saveSettings();settingsRender();};applyAppearance();
+
 (async()=>{try{db=await openDB();await refresh();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});}catch(e){alert("Nie udało się uruchomić lokalnej bazy danych: "+e.message);}})();
 })();
