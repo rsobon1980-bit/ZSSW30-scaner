@@ -6,3 +6,5 @@ OCR: aparat i galeria, dodatkowe próby kontrastu i negatywu, warianty N/S, prop
 v42: ustawienia wyglądu i szablony kategorii; kopie JSON v3.
 
 v43: edycja i usuwanie kategorii, uproszczone ustawienia wyglądu.
+
+v44: 15 kategorii domyślnych, nowe podkategorie jako szablony wyboru, wspólne ikony.

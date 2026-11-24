@@ -364,3 +364,5 @@ html[data-theme="light"] .restore-card{background:#fff;color:#16354b}html[data-t
 .vehicle>.icon-edit{position:absolute;right:57px;top:9px}.vehicle>.vehicle-head{padding-right:106px}.vehicle .vehicle-title{min-width:0;overflow-wrap:anywhere}.status{white-space:pre-wrap;overflow-wrap:anywhere}
 
 .settings-card{max-height:90dvh;overflow:auto;display:grid;gap:10px}.settings-card label{display:block}.settings-card select{width:100%}.settings-card ul{margin:0;padding-left:24px}.settings-card h3{margin:12px 0 0}html[data-hide-photos="true"] .hero-photos{display:none}html[data-text-size="large"] .app{font-size:1.15em}html[data-text-size="small"] .app{font-size:.9em}
+
+.settings-card li{display:flex;align-items:center;gap:8px;margin:5px 0}.settings-card li .icon-edit{margin-left:auto}.settings-card ul{padding:0}
