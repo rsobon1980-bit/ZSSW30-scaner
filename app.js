@@ -121,6 +121,8 @@ function extractNS(text){
  return null;
 }
 function fallbackNS(text){const matches=[...new Set(String(text).match(/\b\d{8}\b/g)||[])];return matches.length===1?matches[0]:null;}
+function rotatedOCR(c,angle){const out=document.createElement("canvas"),a=angle*Math.PI/180;out.width=Math.ceil(c.width*Math.abs(Math.cos(a))+c.height*Math.abs(Math.sin(a)));out.height=Math.ceil(c.height*Math.abs(Math.cos(a))+c.width*Math.abs(Math.sin(a)));const ctx=out.getContext("2d");ctx.fillStyle="white";ctx.fillRect(0,0,out.width,out.height);ctx.translate(out.width/2,out.height/2);ctx.rotate(a);ctx.drawImage(c,-c.width/2,-c.height/2);return out;}
+
 async function ocrCanvas(file){const img=await createImageBitmap(file);try{const c=document.createElement("canvas"),scale=Math.min(2,2400/Math.max(img.width,img.height));c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);const data=ctx.getImageData(0,0,c.width,c.height),d=data.data,gray=new Uint8Array(c.width*c.height);for(let i=0;i<gray.length;i++)gray[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];for(let i=0;i<gray.length;i++){let v=gray[i];if(i>=c.width&&i<gray.length-c.width&&i%c.width>0&&i%c.width<c.width-1)v=2*v-.25*(gray[i-1]+gray[i+1]+gray[i-c.width]+gray[i+c.width]);v=Math.max(0,Math.min(255,(v-128)*1.5+128));d[i*4]=d[i*4+1]=d[i*4+2]=v;}ctx.putImageData(data,0,0);return c;}finally{img.close();}}
 function cleanSerial(value){return String(value||"").trim().replace(/\s+/g,"");}
 function canScan(id,nodeId){const v=vehicles.find(x=>x.id===id),n=v&&findNode(v,nodeId);if(!n||isDesChild(v,n))return false;if(singleSerialOnly(v,n)&&n.serials.length){alert("W tej podkategorii zapisano już numer seryjny.");return false;}return true;}
@@ -148,6 +150,12 @@ async function runOCR(input){
   async function read(image){const result=await worker.recognize(image);texts.push(result.data.text);return extractNS(result.data.text);}
   value=await read(file);
   if(!value){try{const c=await ocrCanvas(file);value=await read(c);if(!value){const ctx=c.getContext("2d"),d=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4)for(let j=0;j<3;j++)d.data[i+j]=255-d.data[i+j];ctx.putImageData(d,0,0);value=await read(c);}}catch(e){console.warn("Przetwarzanie obrazu",e);}}
+  if(!value&&!fallbackNS(texts.join("\n"))){
+   try{const c=await ocrCanvas(file);
+    for(const angle of [4,-4,8,-8]){await worker.setParameters({tessedit_pageseg_mode:"11"});value=await read(rotatedOCR(c,angle));if(value||fallbackNS(texts.join("\n")))break;}
+    if(!value&&!fallbackNS(texts.join("\n"))){await worker.setParameters({tessedit_pageseg_mode:"11",tessedit_char_whitelist:"0123456789"});const r=await worker.recognize(c);texts.push(r.data.text);}
+   }catch(e){console.warn("Dodatkowy OCR",e);}finally{await worker.setParameters({tessedit_pageseg_mode:"3",tessedit_char_whitelist:""});}
+  }
   const full=texts.join("\n---\n");
   if(!value){value=fallbackNS(full);if(value){await confirmScan(id,nodeId,value,"OCR (propozycja bez pewnego oznaczenia N/S)");return;}setStatus(status,"Nie rozpoznano N/S. Odczytany tekst: "+full);return;}
   await confirmScan(id,nodeId,value,"naklejki N/S");
