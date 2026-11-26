@@ -1,11 +1,11 @@
 (() => {
 "use strict";
-const APP_VERSION="44";
+const APP_VERSION="46";
 const CATS=["BZZ-01","BZ05 AZ","BZ05 EL","KWN-01","STS11 AZ","STS11 EL","STS11 SP","STS OB","STS-13","STU-01","DES-40","DES-41","DES-42","PSU-01.D","PSU-01.O"];
 const SETTINGS_KEY="zssw30-settings-v42";
 function cleanSettings(x){return {rootChanges:x?.rootChanges&&typeof x.rootChanges==="object"?x.rootChanges:{},roots:Array.isArray(x?.roots)?x.roots.filter(r=>r&&typeof r.name==="string"&&r.name.trim()).map(r=>({name:r.name.trim(),all:!!r.all})):[],subs:Array.isArray(x?.subs)?x.subs.filter(r=>r&&typeof r.root==="string"&&typeof r.name==="string"&&r.name.trim()).map(r=>({root:r.root,name:r.name.trim(),all:!!r.all,answer:!!r.answer})):[],theme:x?.theme==="light"?"light":"dark",size:["small","normal","large"].includes(x?.size)?x.size:"normal",photos:x?.photos!==false};}
 let settings=cleanSettings({theme:localStorage.getItem("zssw30-theme")});try{const raw=localStorage.getItem(SETTINGS_KEY);if(raw)settings=cleanSettings(JSON.parse(raw));}catch(e){}
-function saveSettings(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));localStorage.setItem("zssw30-theme",settings.theme);applyAppearance();}
+function saveSettings(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));localStorage.setItem("zssw30-theme",settings.theme);applyAppearance();scheduleBackup();}
 function applyAppearance(){document.documentElement.dataset.theme=settings.theme;document.documentElement.dataset.textSize="normal";document.documentElement.dataset.hidePhotos="false";}
 function applyTemplates(v){for(const r of settings.roots){if(!v.categories.some(n=>n.name===r.name))v.categories.push(newNode(r.name));}return v;}
 const DB_NAME="serial-scanner-zssw30", DB_VERSION=1, STORE="vehicles";
@@ -35,7 +35,7 @@ function migrateBzzNames(v){
  return changed;
 }
 function normalizeVehicle(v){v.categories=(v.categories||[]).map(normalizeNode);for(const name of activeBase()){if(!v.categories.some(n=>n.name===name))v.categories.push(newNode(name));}migrateBzzNames(v);return applyTemplates(v);}
-async function refresh(){vehicles=(await all()).map(normalizeVehicle).sort((a,b)=>a.reg.localeCompare(b.reg,"pl",{numeric:true}));render();}
+async function refresh(){vehicles=(await all()).map(normalizeVehicle).sort((a,b)=>a.reg.localeCompare(b.reg,"pl",{numeric:true}));render();scheduleBackup();}
 function countSerials(nodes){return nodes.reduce((sum,n)=>sum+(n.serials?.length||0)+countSerials(n.children||[]),0);}
 function findNode(v,id,nodes=v.categories){for(const n of nodes){if(n.id===id)return n;const found=findNode(v,id,n.children||[]);if(found)return found;}return null;}
 function uiIcon(name){const paths={pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z"/>',trash:'<path d="M3 6h18M8 6V4h8v2M5 6l1 14h12l1-14M10 10v7M14 10v7"/>',plus:'<path d="M12 5v14M5 12h14"/>',camera:'<path d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4Z"/><circle cx="12" cy="13" r="3"/>',comment:'<path d="M20 11.5a8 8 0 0 1-8 8 9 9 0 0 1-4-.9L3 20l1.4-5A8.5 8.5 0 1 1 20 11.5Z"/><path d="M8 11.5h8"/>',chevron:'<path d="m6 9 6 6 6-6"/>',check:'<path d="m5 12 4 4L19 6"/>'};return `<svg class="ui-svg" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||''}</svg>`;}
@@ -152,7 +152,7 @@ async function runOCR(input){
   if(!value){try{const c=await ocrCanvas(file);value=await read(c);if(!value){const ctx=c.getContext("2d"),d=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4)for(let j=0;j<3;j++)d.data[i+j]=255-d.data[i+j];ctx.putImageData(d,0,0);value=await read(c);}}catch(e){console.warn("Przetwarzanie obrazu",e);}}
   if(!value&&!fallbackNS(texts.join("\n"))){
    try{const c=await ocrCanvas(file);
-    for(const angle of [4,-4,8,-8]){await worker.setParameters({tessedit_pageseg_mode:"11"});value=await read(rotatedOCR(c,angle));if(value||fallbackNS(texts.join("\n")))break;}
+    for(const angle of [90,180,270,4,-4,8,-8,12,-12,168,192,78,102,258,282]){await worker.setParameters({tessedit_pageseg_mode:"11"});value=await read(rotatedOCR(c,angle));if(value||fallbackNS(texts.join("\n")))break;}
     if(!value&&!fallbackNS(texts.join("\n"))){await worker.setParameters({tessedit_pageseg_mode:"11",tessedit_char_whitelist:"0123456789"});const r=await worker.recognize(c);texts.push(r.data.text);}
    }catch(e){console.warn("Dodatkowy OCR",e);}finally{await worker.setParameters({tessedit_pageseg_mode:"3",tessedit_char_whitelist:""});}
   }
@@ -312,5 +312,19 @@ async function addTemplate(kind){const field=$(kind==="root"?"settingsRootName":
 const windowlessAll=()=>all();
 $("settingsAddRoot").onclick=()=>addTemplate("root");$("settingsAddSub").onclick=()=>addTemplate("sub");$("settingsReset").onclick=()=>{settings.theme="dark";saveSettings();settingsRender();};applyAppearance();
 
-(async()=>{try{db=await openDB();await refresh();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});}catch(e){alert("Nie udało się uruchomić lokalnej bazy danych: "+e.message);}})();
+
+const AUTO_KEY="zssw30-auto-backups-v46";
+let backupTimer, backupQueue=Promise.resolve(), backupDir=null, lastExternal="";
+function backupHistory(){try{return JSON.parse(localStorage.getItem(AUTO_KEY)||"[]");}catch{return [];}}
+function backupStatus(msg){$("autoBackupStatus").textContent=msg;}
+function scheduleBackup(){if(!db)return;clearTimeout(backupTimer);backupTimer=setTimeout(autoBackup,500);}
+function backupHandleDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("zssw30-backup-folder",1);r.onupgradeneeded=()=>r.result.createObjectStore("handles");r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+async function folderHandle(write,handle){const d=await backupHandleDB();try{return await new Promise((resolve,reject)=>{const t=d.transaction("handles",write?"readwrite":"readonly"),store=t.objectStore("handles"),r=write?store.put(handle,"folder"):store.get("folder");t.oncomplete=()=>resolve(r.result);t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}finally{d.close();}}
+function autoBackup(){if(!db)return;const data=JSON.stringify({settings,vehicles});let history=backupHistory();let entry=history[0];try{if(!entry||entry.data!==data){entry={name:"ZSSW30_auto_"+new Date().toISOString().replace(/[:.]/g,"-")+".json",date:stamp(),data};history=[entry,...history].slice(0,5);localStorage.setItem(AUTO_KEY,JSON.stringify(history));}backupStatus("Kopia wewnętrzna: "+entry.date.replace("T"," ").slice(0,19)+" • "+history.length+"/5");}catch(e){backupStatus("Błąd kopii wewnętrznej: "+e.message);}
+ if(!entry)return;const dir=backupDir;if(!dir)return;backupQueue=backupQueue.catch(()=>{}).then(async()=>{if(dir!==backupDir||lastExternal===entry.name)return;try{if(await dir.queryPermission({mode:"readwrite"})!=="granted")throw Error("Wybierz folder ponownie, aby nadać dostęp.");const f=await dir.getFileHandle(entry.name,{create:true}),w=await f.createWritable();await w.write(JSON.stringify({app:"ZSSW30 Scaner",version:3,exportedAt:entry.date,...JSON.parse(entry.data)},null,2));await w.close();const names=[];for await(const [name,h] of dir.entries())if(h.kind==="file"&&/^ZSSW30_auto_\d{4}-\d{2}-\d{2}T[0-9-]+Z\.json$/.test(name))names.push(name);names.sort().reverse();for(const name of names.slice(5))await dir.removeEntry(name);lastExternal=entry.name;backupStatus("Zapisano w ZSSW30_Backup • maks. 5 kopii");}catch(e){backupStatus("Folder niedostępny: "+e.message+". Użyj kopii wewnętrznej.");}});}
+$("autoBackupFolder").onclick=async()=>{try{if(!window.showDirectoryPicker)throw Error("Ta przeglądarka nie obsługuje wyboru folderu");const parent=await window.showDirectoryPicker({mode:"readwrite"});backupDir=parent.name==="ZSSW30_Backup"?parent:await parent.getDirectoryHandle("ZSSW30_Backup",{create:true});lastExternal="";try{await folderHandle(true,backupDir);}catch{}autoBackup();}catch(e){backupStatus(e.message+". Dostępny ręczny eksport kopii.");}};
+$("autoBackupDownload").onclick=()=>{const h=backupHistory();if(!h.length){alert("Brak kopii.");return;}const choice=prompt(h.map((x,i)=>(i+1)+". "+x.date).join("\n")+"\nWybierz numer kopii:","1");if(choice===null)return;const e=h[Number(choice)-1];if(e)download(e.name,JSON.stringify({app:"ZSSW30 Scaner",version:3,exportedAt:e.date,...JSON.parse(e.data)},null,2),"application/json");};
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){clearTimeout(backupTimer);autoBackup();}});window.addEventListener("pagehide",autoBackup);
+
+(async()=>{try{db=await openDB();await refresh();try{backupDir=await folderHandle(false);}catch{}autoBackup();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});}catch(e){alert("Nie udało się uruchomić lokalnej bazy danych: "+e.message);}})();
 })();
